@@ -1,0 +1,2863 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 12.2
+-- Dumped by pg_dump version 12.2
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: metadata_resource_type_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.metadata_resource_type_enum AS ENUM (
+    'organization',
+    'program',
+    'service',
+    'service_attribute',
+    'other_attribute',
+    'service_at_location',
+    'location',
+    'phone',
+    'contact',
+    'schedule',
+    'funding',
+    'eligibility',
+    'service_area',
+    'accessibility_for_disabilities',
+    'taxonomy_term'
+);
+
+
+ALTER TYPE public.metadata_resource_type_enum OWNER TO postgres;
+
+--
+-- Name: other_attribute_link_type_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.other_attribute_link_type_enum AS ENUM (
+    'organization',
+    'program',
+    'service',
+    'service_at_location',
+    'location',
+    'phone',
+    'contact',
+    'physical_address',
+    'postal_address',
+    'schedule',
+    'funding',
+    'eligibility',
+    'service_area',
+    'required_document',
+    'payment_accepted',
+    'language',
+    'accessibility_for_disabilities'
+);
+
+
+ALTER TYPE public.other_attribute_link_type_enum OWNER TO postgres;
+
+--
+-- Name: phone_type_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.phone_type_enum AS ENUM (
+    'text',
+    'voice',
+    'fax',
+    'cell',
+    'video',
+    'pager',
+    'textphone'
+);
+
+
+ALTER TYPE public.phone_type_enum OWNER TO postgres;
+
+--
+-- Name: schedule_freq_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.schedule_freq_enum AS ENUM (
+    'DAILY',
+    'WEEKLY',
+    'MONTHLY',
+    'YEARLY'
+);
+
+
+ALTER TYPE public.schedule_freq_enum OWNER TO postgres;
+
+--
+-- Name: service_status_enum; Type: TYPE; Schema: public; Owner: postgres
+--
+
+CREATE TYPE public.service_status_enum AS ENUM (
+    'active',
+    'inactive',
+    'defunct',
+    'temporarily closed'
+);
+
+
+ALTER TYPE public.service_status_enum OWNER TO postgres;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: accessibility_for_disabilities; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.accessibility_for_disabilities (
+    id text NOT NULL,
+    location_id text,
+    accessibility text,
+    details text,
+    CONSTRAINT accessibility_for_disabilities_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT accessibility_for_disabilities_location_id_check CHECK ((length(location_id) <= 250))
+);
+
+
+ALTER TABLE public.accessibility_for_disabilities OWNER TO postgres;
+
+--
+-- Name: COLUMN accessibility_for_disabilities.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.accessibility_for_disabilities.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN accessibility_for_disabilities.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.accessibility_for_disabilities.location_id IS 'The identifier of the location for which the entry describes the accessibility provision';
+
+
+--
+-- Name: COLUMN accessibility_for_disabilities.accessibility; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.accessibility_for_disabilities.accessibility IS 'Description of assistance or infrastructure that facilitate access to clients with disabilities.';
+
+
+--
+-- Name: COLUMN accessibility_for_disabilities.details; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.accessibility_for_disabilities.details IS 'Any further details relating to the relevant accessibility arrangements at this location. E.g. whether advance notice is required to use an accessibility facility.';
+
+
+--
+-- Name: contact; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.contact (
+    id text NOT NULL,
+    organization_id text,
+    service_id text,
+    service_at_location_id text,
+    name text,
+    title text,
+    department text,
+    email text,
+    CONSTRAINT contact_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT contact_organization_id_check CHECK ((length(organization_id) <= 250)),
+    CONSTRAINT contact_service_at_location_id_check CHECK ((length(service_at_location_id) <= 250)),
+    CONSTRAINT contact_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.contact OWNER TO postgres;
+
+--
+-- Name: COLUMN contact.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.id IS 'Each contact must have a unique identifier';
+
+
+--
+-- Name: COLUMN contact.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.organization_id IS 'The identifier of the organization for which this is a contact';
+
+
+--
+-- Name: COLUMN contact.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.service_id IS 'The identifier of the service for which this is a contact';
+
+
+--
+-- Name: COLUMN contact.service_at_location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.service_at_location_id IS 'The identifier of the ''service at location'' table entry, when this contact is specific to a service in a particular location.';
+
+
+--
+-- Name: COLUMN contact.name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.name IS 'The name of the person';
+
+
+--
+-- Name: COLUMN contact.title; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.title IS 'The job title of the person';
+
+
+--
+-- Name: COLUMN contact.department; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.department IS 'The department that the person is part of';
+
+
+--
+-- Name: COLUMN contact.email; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.contact.email IS 'The email address of the person';
+
+
+--
+-- Name: eligibility; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.eligibility (
+    id text NOT NULL,
+    service_id text,
+    CONSTRAINT eligibility_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT eligibility_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.eligibility OWNER TO postgres;
+
+--
+-- Name: COLUMN eligibility.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.eligibility.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN eligibility.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.eligibility.service_id IS 'The identifier of the service for which this entry describes the eligibility criteria';
+
+
+--
+-- Name: funding; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.funding (
+    id text NOT NULL,
+    organization_id text,
+    service_id text,
+    source text,
+    CONSTRAINT funding_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT funding_organization_id_check CHECK ((length(organization_id) <= 250)),
+    CONSTRAINT funding_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.funding OWNER TO postgres;
+
+--
+-- Name: COLUMN funding.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.funding.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN funding.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.funding.organization_id IS 'The identifier of the organization in receipt of this funding.';
+
+
+--
+-- Name: COLUMN funding.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.funding.service_id IS 'The identifier of the service in receipt of this funding';
+
+
+--
+-- Name: COLUMN funding.source; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.funding.source IS 'A free text description of the source of funds for this organization or service.';
+
+
+--
+-- Name: language; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.language (
+    id text NOT NULL,
+    service_id text,
+    location_id text,
+    language text,
+    CONSTRAINT language_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT language_location_id_check CHECK ((length(location_id) <= 250)),
+    CONSTRAINT language_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.language OWNER TO postgres;
+
+--
+-- Name: COLUMN language.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.language.id IS 'Each language must have a unique identifier';
+
+
+--
+-- Name: COLUMN language.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.language.service_id IS 'The identifier of the service for which the entry describes the languages in which services are delivered';
+
+
+--
+-- Name: COLUMN language.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.language.location_id IS 'The identifier of the location for which the entry describes the languages in which services are delivered';
+
+
+--
+-- Name: COLUMN language.language; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.language.language IS 'Languages, other than English, in which the service is delivered. Languages are listed as ISO639-1 codes.';
+
+
+--
+-- Name: location; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.location (
+    id text NOT NULL,
+    organization_id text,
+    name text,
+    alternate_name text,
+    description text,
+    transportation text,
+    latitude numeric,
+    longitude numeric,
+    CONSTRAINT location_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT location_organization_id_check CHECK ((length(organization_id) <= 250))
+);
+
+
+ALTER TABLE public.location OWNER TO postgres;
+
+--
+-- Name: COLUMN location.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.id IS 'Each location must have a unique identifier';
+
+
+--
+-- Name: COLUMN location.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.organization_id IS 'Each location entry should be linked to a single organization. This is the organization that is responsible for maintaining information about this location. The identifier of the organization should be given here. Details of the services the organization delivers at this location should be provided in the services_at_location table.';
+
+
+--
+-- Name: COLUMN location.name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.name IS 'The name of the location';
+
+
+--
+-- Name: COLUMN location.alternate_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.alternate_name IS 'An alternative name for the location';
+
+
+--
+-- Name: COLUMN location.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.description IS 'A description of this location.';
+
+
+--
+-- Name: COLUMN location.transportation; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.transportation IS 'A description of the access to public or private transportation to and from the location.';
+
+
+--
+-- Name: COLUMN location.latitude; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.latitude IS 'Y coordinate of location expressed in decimal degrees in WGS84 datum.';
+
+
+--
+-- Name: COLUMN location.longitude; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.location.longitude IS 'X coordinate of location expressed in decimal degrees in WGS84 datum.';
+
+
+--
+-- Name: meta_table_description; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.meta_table_description (
+    id text NOT NULL,
+    name text,
+    language text,
+    character_set text,
+    CONSTRAINT meta_table_description_id_check CHECK ((length(id) <= 250))
+);
+
+
+ALTER TABLE public.meta_table_description OWNER TO postgres;
+
+--
+-- Name: COLUMN meta_table_description.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.meta_table_description.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: metadata; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.metadata (
+    id text NOT NULL,
+    resource_id text NOT NULL,
+    resource_type public.metadata_resource_type_enum NOT NULL,
+    last_action_date timestamp without time zone NOT NULL,
+    last_action_type text NOT NULL,
+    field_name text NOT NULL,
+    previous_value text NOT NULL,
+    replacement_value text NOT NULL,
+    updated_by text NOT NULL,
+    CONSTRAINT metadata_id_check CHECK ((length(id) <= 250))
+);
+
+
+ALTER TABLE public.metadata OWNER TO postgres;
+
+--
+-- Name: COLUMN metadata.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN metadata.resource_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.resource_id IS 'Each service, program. location, address, or contact will have a unique identifier.';
+
+
+--
+-- Name: COLUMN metadata.resource_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.resource_type IS 'The type of entity being referenced';
+
+
+--
+-- Name: COLUMN metadata.last_action_date; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.last_action_date IS 'The date when data was changed.';
+
+
+--
+-- Name: COLUMN metadata.last_action_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.last_action_type IS 'The kind of change made to the data; eg create, update, delete';
+
+
+--
+-- Name: COLUMN metadata.field_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.field_name IS 'The name of field that has been modified';
+
+
+--
+-- Name: COLUMN metadata.previous_value; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.previous_value IS 'The previous value of a field that has been updated';
+
+
+--
+-- Name: COLUMN metadata.replacement_value; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.replacement_value IS 'The new value of a field that has been updated';
+
+
+--
+-- Name: COLUMN metadata.updated_by; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.metadata.updated_by IS 'The name of the person who updated a value';
+
+
+--
+-- Name: organization; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.organization (
+    id text NOT NULL,
+    name text NOT NULL,
+    alternate_name text,
+    description text NOT NULL,
+    email text,
+    url text,
+    tax_status text,
+    tax_id text,
+    year_incorporated integer,
+    legal_status text,
+    CONSTRAINT organization_id_check CHECK ((length(id) <= 250))
+);
+
+
+ALTER TABLE public.organization OWNER TO postgres;
+
+--
+-- Name: COLUMN organization.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.id IS 'Each organization must have a unique identifier.';
+
+
+--
+-- Name: COLUMN organization.name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.name IS 'The official or public name of the organization.';
+
+
+--
+-- Name: COLUMN organization.alternate_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.alternate_name IS 'Alternative or commonly used name for the organization.';
+
+
+--
+-- Name: COLUMN organization.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.description IS 'A brief summary about the organization. It can contain markup such as HTML or Markdown.';
+
+
+--
+-- Name: COLUMN organization.email; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.email IS 'The contact e-mail address for the organization.';
+
+
+--
+-- Name: COLUMN organization.url; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.url IS 'The URL (website address) of the organization.';
+
+
+--
+-- Name: COLUMN organization.tax_status; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.tax_status IS 'Government assigned tax designation for tax-exempt organizations.';
+
+
+--
+-- Name: COLUMN organization.tax_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.tax_id IS 'A government issued identifier used for the purpose of tax administration.';
+
+
+--
+-- Name: COLUMN organization.year_incorporated; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.year_incorporated IS 'The year in which the organization was legally formed.';
+
+
+--
+-- Name: COLUMN organization.legal_status; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.organization.legal_status IS 'The legal status defines the conditions that an organization is operating under; e.g. non-profit, private corporation or a government organization.';
+
+
+--
+-- Name: other_attribute; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.other_attribute (
+    id text NOT NULL,
+    link_id text NOT NULL,
+    link_type public.other_attribute_link_type_enum NOT NULL,
+    taxonomy_term_id text,
+    CONSTRAINT other_attribute_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT other_attribute_taxonomy_term_id_check CHECK ((length(taxonomy_term_id) <= 250))
+);
+
+
+ALTER TABLE public.other_attribute OWNER TO postgres;
+
+--
+-- Name: COLUMN other_attribute.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.other_attribute.id IS 'Each other_attribute entry should have a unique identifier.';
+
+
+--
+-- Name: COLUMN other_attribute.link_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.other_attribute.link_id IS 'The identifier of the entity to which this taxonomy term applies.';
+
+
+--
+-- Name: COLUMN other_attribute.link_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.other_attribute.link_type IS 'The identifier of the entity to which this taxonomy term applies.';
+
+
+--
+-- Name: COLUMN other_attribute.taxonomy_term_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.other_attribute.taxonomy_term_id IS 'The identifier of this taxonomy term from the taxonomy table.';
+
+
+--
+-- Name: payment_accepted; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.payment_accepted (
+    id text NOT NULL,
+    service_id text,
+    payment text,
+    CONSTRAINT payment_accepted_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT payment_accepted_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.payment_accepted OWNER TO postgres;
+
+--
+-- Name: COLUMN payment_accepted.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.payment_accepted.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN payment_accepted.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.payment_accepted.service_id IS 'The identifier of the services for which the entry describes the accepted payment methods';
+
+
+--
+-- Name: COLUMN payment_accepted.payment; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.payment_accepted.payment IS 'The methods of payment accepted for the service';
+
+
+--
+-- Name: phone; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.phone (
+    id text NOT NULL,
+    location_id text,
+    service_id text,
+    organization_id text,
+    contact_id text,
+    service_at_location_id text,
+    number text NOT NULL,
+    extension numeric,
+    type public.phone_type_enum,
+    language text,
+    description text,
+    department text,
+    CONSTRAINT phone_contact_id_check CHECK ((length(contact_id) <= 250)),
+    CONSTRAINT phone_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT phone_location_id_check CHECK ((length(location_id) <= 250)),
+    CONSTRAINT phone_organization_id_check CHECK ((length(organization_id) <= 250)),
+    CONSTRAINT phone_service_at_location_id_check CHECK ((length(service_at_location_id) <= 250)),
+    CONSTRAINT phone_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.phone OWNER TO postgres;
+
+--
+-- Name: COLUMN phone.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN phone.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.location_id IS 'The identifier of the location where this phone number is located';
+
+
+--
+-- Name: COLUMN phone.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.service_id IS 'The identifier of the service for which this is the phone number';
+
+
+--
+-- Name: COLUMN phone.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.organization_id IS 'The identifier of the organization for which this is the phone number';
+
+
+--
+-- Name: COLUMN phone.contact_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.contact_id IS 'The identifier of the contact for which this is the phone number';
+
+
+--
+-- Name: COLUMN phone.service_at_location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.service_at_location_id IS 'The identifier of the ''service at location'' table entry, when this phone number is specific to a service in a particular location.';
+
+
+--
+-- Name: COLUMN phone.number; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.number IS 'The phone number';
+
+
+--
+-- Name: COLUMN phone.extension; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.extension IS 'The extension of the phone number';
+
+
+--
+-- Name: COLUMN phone.type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.type IS 'Indicates the type of phone service, drawing from the RFC6350 list of types (text (for SMS), voice, fax, cell, video, pager, textphone).';
+
+
+--
+-- Name: COLUMN phone.language; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.language IS 'A comma separated list of ISO 639-1, or ISO 639-2 [language codes](available at http://www.loc.gov/standards/iso639-2/php/code_list.php) to represent the languages available from this phone service. The three-letter codes from ISO 639-2 provide greater accuracy when describing variants of languages, which may be relevant to particular communities.';
+
+
+--
+-- Name: COLUMN phone.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.description IS 'A description providing extra information about the phone service (e.g. any special arrangements for accessing, or details of availability at particular times.';
+
+
+--
+-- Name: COLUMN phone.department; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.phone.department IS '(Deprecated) The department for which this is the phone number. This field is deprecated and will be removed in a future version of HSDS.';
+
+
+--
+-- Name: physical_address; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.physical_address (
+    id text NOT NULL,
+    location_id text,
+    attention text,
+    address_1 text NOT NULL,
+    address_2 text,
+    address_3 text,
+    address_4 text,
+    city text NOT NULL,
+    region text,
+    state_province text NOT NULL,
+    postal_code text NOT NULL,
+    country text NOT NULL,
+    CONSTRAINT physical_address_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT physical_address_location_id_check CHECK ((length(location_id) <= 250))
+);
+
+
+ALTER TABLE public.physical_address OWNER TO postgres;
+
+--
+-- Name: COLUMN physical_address.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.id IS 'Each physical address must have a unique identifier.';
+
+
+--
+-- Name: COLUMN physical_address.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.location_id IS 'The identifier of the location for which this is the address.';
+
+
+--
+-- Name: COLUMN physical_address.attention; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.attention IS 'The person or entity whose attention should be sought at the location (Often included as ''care of'' component of an address.)';
+
+
+--
+-- Name: COLUMN physical_address.address_1; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.address_1 IS 'The first line(s) of the address, including office, building number and street.';
+
+
+--
+-- Name: COLUMN physical_address.address_2; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.address_2 IS '(Deprecated) A second (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN physical_address.address_3; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.address_3 IS '(Deprecated) A third (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN physical_address.address_4; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.address_4 IS '(Deprecated) The fourth (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN physical_address.city; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.city IS 'The city in which the address is located.';
+
+
+--
+-- Name: COLUMN physical_address.region; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.region IS 'The region in which the address is located (optional).';
+
+
+--
+-- Name: COLUMN physical_address.state_province; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.state_province IS 'The state or province in which the address is located.';
+
+
+--
+-- Name: COLUMN physical_address.postal_code; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.postal_code IS 'The postal code for the address.';
+
+
+--
+-- Name: COLUMN physical_address.country; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.physical_address.country IS 'The country in which the address is located. This should be given as an ISO 3361-1 country code (two letter abbreviation).';
+
+
+--
+-- Name: postal_address; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.postal_address (
+    id text NOT NULL,
+    location_id text,
+    attention text,
+    address_1 text NOT NULL,
+    address_2 text,
+    address_3 text,
+    address_4 text,
+    city text NOT NULL,
+    region text,
+    state_province text NOT NULL,
+    postal_code text NOT NULL,
+    country text NOT NULL,
+    CONSTRAINT postal_address_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT postal_address_location_id_check CHECK ((length(location_id) <= 250))
+);
+
+
+ALTER TABLE public.postal_address OWNER TO postgres;
+
+--
+-- Name: COLUMN postal_address.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.id IS 'Each postal address must have a unique identifier';
+
+
+--
+-- Name: COLUMN postal_address.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.location_id IS 'The identifier of the location for which this is the postal address.';
+
+
+--
+-- Name: COLUMN postal_address.attention; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.attention IS 'The person or entity whose attention should be sought at the location (Often included as ''care of'' component of an address.)';
+
+
+--
+-- Name: COLUMN postal_address.address_1; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.address_1 IS 'The first line(s) of the address, including office, building number and street.';
+
+
+--
+-- Name: COLUMN postal_address.address_2; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.address_2 IS '(Deprecated) A second (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN postal_address.address_3; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.address_3 IS '(Deprecated) A third (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN postal_address.address_4; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.address_4 IS '(Deprecated) The fourth (additional) line of address information. (This field is deprecated: we recommend including all address information before ''city'' as a comma or newline separated list in address_1. There is no guarantee that systems will read this line of address information.)';
+
+
+--
+-- Name: COLUMN postal_address.city; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.city IS 'The city in which the address is located.';
+
+
+--
+-- Name: COLUMN postal_address.region; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.region IS 'The region in which the address is located (optional).';
+
+
+--
+-- Name: COLUMN postal_address.state_province; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.state_province IS 'The state or province in which the address is located.';
+
+
+--
+-- Name: COLUMN postal_address.postal_code; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.postal_code IS 'The postal code for the address.';
+
+
+--
+-- Name: COLUMN postal_address.country; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.postal_address.country IS 'The country in which the address is located. This should be given as an ISO 3361-1 country code (two letter abbreviation)';
+
+
+--
+-- Name: program; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.program (
+    id text NOT NULL,
+    organization_id text NOT NULL,
+    name text NOT NULL,
+    alternate_name text,
+    CONSTRAINT program_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT program_organization_id_check CHECK ((length(organization_id) <= 250))
+);
+
+
+ALTER TABLE public.program OWNER TO postgres;
+
+--
+-- Name: COLUMN program.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.program.id IS 'Each program must have a unique identifier.';
+
+
+--
+-- Name: COLUMN program.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.program.organization_id IS 'Each program must belong to a single organization. The identifier of the organization should be given here.';
+
+
+--
+-- Name: COLUMN program.name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.program.name IS 'The name of the program';
+
+
+--
+-- Name: COLUMN program.alternate_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.program.alternate_name IS 'An alternative name for the program';
+
+
+--
+-- Name: required_document; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.required_document (
+    id text NOT NULL,
+    service_id text,
+    document text,
+    CONSTRAINT required_document_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT required_document_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.required_document OWNER TO postgres;
+
+--
+-- Name: COLUMN required_document.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.required_document.id IS 'Each document must have a unique identifier';
+
+
+--
+-- Name: COLUMN required_document.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.required_document.service_id IS 'The identifier of the service for which this entry describes the required document';
+
+
+--
+-- Name: COLUMN required_document.document; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.required_document.document IS 'The document required to apply for or receive the service. e.g. ''Government-issued ID'', ''EU Passport''';
+
+
+--
+-- Name: schedule; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.schedule (
+    id text NOT NULL,
+    service_id text,
+    location_id text,
+    service_at_location_id text,
+    valid_from date,
+    valid_to date,
+    dtstart date,
+    timezone numeric,
+    until date,
+    count date,
+    wkst date,
+    freq public.schedule_freq_enum,
+    "interval" numeric,
+    byday text,
+    byweekno text,
+    bymonthday numeric,
+    byyearday numeric,
+    description text,
+    opens_at time without time zone,
+    closes_at time without time zone,
+    CONSTRAINT schedule_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT schedule_location_id_check CHECK ((length(location_id) <= 250)),
+    CONSTRAINT schedule_service_at_location_id_check CHECK ((length(service_at_location_id) <= 250)),
+    CONSTRAINT schedule_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.schedule OWNER TO postgres;
+
+--
+-- Name: COLUMN schedule.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.id IS 'Each entry must have a unique identifier';
+
+
+--
+-- Name: COLUMN schedule.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.service_id IS 'The identifier of the service for which this is the regular schedule';
+
+
+--
+-- Name: COLUMN schedule.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.location_id IS 'The identifier of the location for which this is the regular schedule';
+
+
+--
+-- Name: COLUMN schedule.service_at_location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.service_at_location_id IS 'The identifier of the ''service at location'' table entry, when this schedule is specific to a service in a particular location.';
+
+
+--
+-- Name: COLUMN schedule.valid_from; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.valid_from IS 'The date from which the schedule information is valid.';
+
+
+--
+-- Name: COLUMN schedule.valid_to; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.valid_to IS 'The last date on which the schedule information is valid.';
+
+
+--
+-- Name: COLUMN schedule.dtstart; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.dtstart IS 'iCal - The date of the first event is the schedule. Necessary when using the ''interval'' feature, optional otherwise.';
+
+
+--
+-- Name: COLUMN schedule.timezone; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.timezone IS 'The timezone that all dates are expressed as, expressed as a UTC offset. Dates are assumed to be UTC otherwise.';
+
+
+--
+-- Name: COLUMN schedule.until; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.until IS 'iCal - The date of the last occurence of the recurring event.';
+
+
+--
+-- Name: COLUMN schedule.count; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.count IS 'iCal - The number of times that the event occurs. Use this instead of ''until'', if appropriate.';
+
+
+--
+-- Name: COLUMN schedule.wkst; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.wkst IS 'iCal - The day on which the week starts, eg MO.';
+
+
+--
+-- Name: COLUMN schedule.freq; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.freq IS 'iCal - How often the frequency repeats. E.g. Frequency use one of WEEKLY or MONTHLY.';
+
+
+--
+-- Name: COLUMN schedule."interval"; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule."interval" IS 'iCal - How often the frequency repeats. E.g. Interval 2 for Frequency WEEKLY gives Fortnightly';
+
+
+--
+-- Name: COLUMN schedule.byday; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.byday IS 'iCal - Comma seperated days of the week. E.g. SU,MO,TU,WE,TH,FR,SA. Where freq is MONTHLY each part can be preceded by a positive or negative integer to represent which occurrence in a month; e.g. 2MO is the second Monday in a month. -1FR is the last Friday';
+
+
+--
+-- Name: COLUMN schedule.byweekno; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.byweekno IS 'iCal - Comma seperated numeric weeks of the year if freq is WEEKLY. Can be negative to represent weeks before the end of the year; e.g. -5 is the 5th to last week in a year.';
+
+
+--
+-- Name: COLUMN schedule.bymonthday; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.bymonthday IS 'iCal - Comma separated numeric days of the month if frequency is MONTHLY. Can be negative to represent days before the end of the month; e.g. -5 is the 5th to last day in a month.';
+
+
+--
+-- Name: COLUMN schedule.byyearday; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.byyearday IS 'iCal - Comma separated numeric days of the month if frequency is YEARLY. Can be negative to represent days before the end of the year; e.g. -1 is the last day in a year.';
+
+
+--
+-- Name: COLUMN schedule.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.description IS 'Human readable description of the availability of the service.';
+
+
+--
+-- Name: COLUMN schedule.opens_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.opens_at IS 'The time when a service or location opens. This should use HH:MM format and should include timezone information, either adding the suffix ''Z'' when the date is in UTC, or including an offset from UTC (e.g. 09:00-05:00 for 9am EST.)';
+
+
+--
+-- Name: COLUMN schedule.closes_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.schedule.closes_at IS 'The time when a service or location closes. This should use HH:MM format and should include timezone information, either adding the suffix ''Z'' when the date is in UTC, or including an offset from UTC (e.g. 09:00-05:00 for 9am EST.)';
+
+
+--
+-- Name: service; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.service (
+    id text NOT NULL,
+    organization_id text NOT NULL,
+    program_id text,
+    name text NOT NULL,
+    alternate_name text,
+    description text,
+    url text,
+    email text,
+    status public.service_status_enum NOT NULL,
+    interpretation_services text,
+    application_process text,
+    wait_time text,
+    fees text,
+    accreditations text,
+    licenses text,
+    CONSTRAINT service_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT service_organization_id_check CHECK ((length(organization_id) <= 250)),
+    CONSTRAINT service_program_id_check CHECK ((length(program_id) <= 250))
+);
+
+
+ALTER TABLE public.service OWNER TO postgres;
+
+--
+-- Name: COLUMN service.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.id IS 'Each service must have a unique identifier.';
+
+
+--
+-- Name: COLUMN service.organization_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.organization_id IS 'The identifier of the organization that provides this service.';
+
+
+--
+-- Name: COLUMN service.program_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.program_id IS 'The identifier of the program this service is delivered under.';
+
+
+--
+-- Name: COLUMN service.name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.name IS 'The official or public name of the service.';
+
+
+--
+-- Name: COLUMN service.alternate_name; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.alternate_name IS 'Alternative or commonly used name for a service.';
+
+
+--
+-- Name: COLUMN service.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.description IS 'A description of the service.';
+
+
+--
+-- Name: COLUMN service.url; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.url IS 'URL of the service';
+
+
+--
+-- Name: COLUMN service.email; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.email IS 'Email address for the service';
+
+
+--
+-- Name: COLUMN service.status; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.status IS 'The current status of the service.';
+
+
+--
+-- Name: COLUMN service.interpretation_services; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.interpretation_services IS 'A description of any interpretation services available for accessing this service.';
+
+
+--
+-- Name: COLUMN service.application_process; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.application_process IS 'The steps needed to access the service.';
+
+
+--
+-- Name: COLUMN service.wait_time; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.wait_time IS 'Time a client may expect to wait before receiving a service.';
+
+
+--
+-- Name: COLUMN service.fees; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.fees IS 'Details of any charges for service users to access this service.';
+
+
+--
+-- Name: COLUMN service.accreditations; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.accreditations IS 'Details of any accreditations. Accreditation is the formal evaluation of an organization or program against best practice standards set by an accrediting organization.';
+
+
+--
+-- Name: COLUMN service.licenses; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service.licenses IS 'An organization may have a license issued by a government entity to operate legally. A list of any such licenses can be provided here.';
+
+
+--
+-- Name: service_area; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.service_area (
+    id text NOT NULL,
+    service_id text,
+    service_area text,
+    description text,
+    CONSTRAINT service_area_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT service_area_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.service_area OWNER TO postgres;
+
+--
+-- Name: COLUMN service_area.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_area.id IS 'Each service area must have a unique identifier';
+
+
+--
+-- Name: COLUMN service_area.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_area.service_id IS 'The identifier of the service for which this entry describes the service area';
+
+
+--
+-- Name: COLUMN service_area.service_area; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_area.service_area IS 'The geographic area where a service is available. This is a free-text description, and so may be precise or indefinite as necessary.';
+
+
+--
+-- Name: COLUMN service_area.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_area.description IS 'A more detailed description of this service area. Used to provide any additional information that cannot be communicated using the structured area and geometry fields.';
+
+
+--
+-- Name: service_at_location; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.service_at_location (
+    id text NOT NULL,
+    service_id text NOT NULL,
+    location_id text NOT NULL,
+    description text,
+    CONSTRAINT service_at_location_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT service_at_location_location_id_check CHECK ((length(location_id) <= 250)),
+    CONSTRAINT service_at_location_service_id_check CHECK ((length(service_id) <= 250))
+);
+
+
+ALTER TABLE public.service_at_location OWNER TO postgres;
+
+--
+-- Name: COLUMN service_at_location.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_at_location.id IS 'Each entry must have a unique identifier.';
+
+
+--
+-- Name: COLUMN service_at_location.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_at_location.service_id IS 'The identifier of the service at a given location.';
+
+
+--
+-- Name: COLUMN service_at_location.location_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_at_location.location_id IS 'The identifier of the location where this service operates.';
+
+
+--
+-- Name: COLUMN service_at_location.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_at_location.description IS 'Any additional information that should be displayed to users about the service at this specific location.';
+
+
+--
+-- Name: service_attribute; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.service_attribute (
+    id text NOT NULL,
+    service_id text NOT NULL,
+    taxonomy_term_id text,
+    CONSTRAINT service_attribute_id_check CHECK ((length(id) <= 250)),
+    CONSTRAINT service_attribute_service_id_check CHECK ((length(service_id) <= 250)),
+    CONSTRAINT service_attribute_taxonomy_term_id_check CHECK ((length(taxonomy_term_id) <= 250))
+);
+
+
+ALTER TABLE public.service_attribute OWNER TO postgres;
+
+--
+-- Name: COLUMN service_attribute.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_attribute.id IS 'Each service_attribute entry should have a unique identifier.';
+
+
+--
+-- Name: COLUMN service_attribute.service_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_attribute.service_id IS 'The identifier of the service to which this taxonomy term applies.';
+
+
+--
+-- Name: COLUMN service_attribute.taxonomy_term_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.service_attribute.taxonomy_term_id IS 'The identifier of this taxonomy term from the taxonomy table.';
+
+
+--
+-- Name: taxonomy_term; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.taxonomy_term (
+    id text NOT NULL,
+    term text NOT NULL,
+    description text NOT NULL,
+    parent_id text,
+    taxonomy text,
+    language text,
+    CONSTRAINT taxonomy_term_id_check CHECK ((length(id) <= 250))
+);
+
+
+ALTER TABLE public.taxonomy_term OWNER TO postgres;
+
+--
+-- Name: COLUMN taxonomy_term.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.id IS 'Each taxonomy term must have a unique identifier, within the scope of the dataset';
+
+
+--
+-- Name: COLUMN taxonomy_term.term; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.term IS 'The taxonomy term itself.';
+
+
+--
+-- Name: COLUMN taxonomy_term.description; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.description IS 'What the term means';
+
+
+--
+-- Name: COLUMN taxonomy_term.parent_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.parent_id IS 'If this is a child term in a hierarchical taxonomy, give the identifier of the parent category. For top-level categories, this should be left blank.';
+
+
+--
+-- Name: COLUMN taxonomy_term.taxonomy; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.taxonomy IS 'If this is an established taxonomy, detail which taxonomy is in use. For example, AIRS or Open Eligibility. If possible, provide a URI.';
+
+
+--
+-- Name: COLUMN taxonomy_term.language; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.taxonomy_term.language IS 'An ISO 639-1, or ISO 639-2 [language code](available at http://www.loc.gov/standards/iso639-2/php/code_list.php) to represent the language of the term. The three-letter codes from ISO 639-2 provide greater accuracy when describing variants of languages, which may be relevant to particular communities.';
+
+
+--
+-- Data for Name: accessibility_for_disabilities; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.accessibility_for_disabilities (id, location_id, accessibility, details) FROM stdin;
+af51e4f0-1b0f-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	disabled_parking	Some details regarding the parking lot
+af4747f0-1b0f-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	wheelchair	\N
+af4647f0-1b0f-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af376470-1b0f-11e9-b56e-0800200c9a66	30b83ee0-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af4473f0-1b0f-11e9-b56e-0800200c9a66	30b83fee-64a1-11e6-8b77-86f30ca893d3	accessible parking	\N
+af4748f0-1b0f-11e9-b56e-0800200c9a66	30b841d8-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af447640-1b0f-11e9-b56e-0800200c9a66	30b841d8-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af4858f0-1b0f-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	disabled parking	\N
+a46478f0-1b0f-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	wheelchair ramp	\N
+afa748f0-1b0f-11e9-b56e-0800200c9a66	30b843a4-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af457580-1b0f-11e9-b56e-0800200c9a66	30b84570-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af546482-1b0f-11e9-b56e-0800200c9a66	30b8475a-64a1-11e6-8b77-86f30ca893d3	wheelchair	\N
+af464920-1b0f-11e9-b56e-0800200c9a66	30b8482c-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af4649f0-1b0f-11e9-b56e-0800200c9a66	30b84a0c-64a1-11e6-8b77-86f30ca893d3	wheelchair accessible	\N
+af3638f0-1b0f-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	disabled_parking	Some details regarding the parking lot
+af476490-1b0f-11e9-b56e-0800200c9a66	30b8475a-64a1-11e6-8b77-86f30ca893d3	ramps	Curb ramps and wheelchair accessible ramps at location
+af496730-1b0f-11e9-b56e-0800200c9a66	30b8475a-64a1-11e6-8b77-86f30ca893d3	pubtrans_disable_access	Nearby wheelchair accessible routes service public transportation stops
+af747490-1b0f-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	handrails	Handrails along walking surfaces
+af282500-1b0f-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	visualaudiocomm	Two-way visual and audio communication systems available at location assisting persons with hearing, speech, or visual impairments
+\.
+
+
+--
+-- Data for Name: contact; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.contact (id, organization_id, service_id, service_at_location_id, name, title, department, email) FROM stdin;
+067647d0-1b0b-11e9-b56e-0800200c9a66	18996320-649c-11e6-8b77-86f30ca893d3	\N	\N	John Doe	Mr	Social Services Department	johndoe@example.com
+03638490-1b0b-11e9-b56e-0800200c9a66	1899673a-649c-11e6-8b77-86f30ca893d3	\N	\N	Mary Smith	Ms	Services Department	marysmith@example.com
+0cd7cbd0-1b0b-11e9-b56e-0800200c9a66	1899600a-649c-11e6-8b77-86f30ca893d3	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	d254626c-6858-46ad-850a-6e1c53ea463a	Contact 1	Mr	Department 1	contact1@example.com
+08576576-1b0b-11e9-b56e-0800200c9a66	1899683e-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 1	Mr	Test Department	testcontact1@example.com
+04647648-1b0b-11e9-b56e-0800200c9a66	1899691a-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 2	Ms	Test Department	testcontact2@example.com
+04657580-1b0b-11e9-b56e-0800200c9a66	189969f6-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 3	Mr	Test Department	testcontact3@example.com
+056073d0-1b0b-11e9-b56e-0800200c9a66	18996ac8-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 4	Ms	Test Department	testcontact4@example.com
+0373abc0-1b0b-11e9-b56e-0800200c9a66	18996b9a-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 5	Mr	Test Department	testcontact5@example.com
+047487ae-1b0b-11e9-b56e-0800200c9a66	18996c62-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 6	Mr	Test Department	testcontact6@example.com
+0474874d-1b0b-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	\N	\N	Test Contact 7	Ms	Test Department	testcontact7@example.com
+0464747d-1b0b-11e9-b56e-0800200c9a66	1899600a-649c-11e6-8b77-86f30ca893d3	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	d254626c-6858-46ad-850a-6e1c53ea463a	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0473934d-1b0b-11e9-b56e-0800200c9a66	18996320-649c-11e6-8b77-86f30ca893d3	25870bcf-7528-4e05-8f0c-7e639075ce71	a6e824f6-aac4-4472-ae24-a27c0253ede3	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0447583d-1b0b-11e9-b56e-0800200c9a66	1899673a-649c-11e6-8b77-86f30ca893d3	10cbc6ce-0ae5-467f-8069-18e90ec5b037	6b524072-5768-4a92-b0fd-fa87a77311b2	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+04484930-1b0b-11e9-b56e-0800200c9a66	1899673a-649c-11e6-8b77-86f30ca893d3	a27a0710-72d2-41a2-8947-9d0e0e69e257	6b524072-5768-4a92-b0fd-fa87a77311b2	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+044649ab-1b0b-11e9-b56e-0800200c9a66	1899683e-649c-11e6-8b77-86f30ca893d3	c28f4d9f-10b2-4baf-a727-a31ae79063ce	dad28eee-00f9-4dac-b891-d7ba85035928	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0a74744d-1b0b-11e9-b56e-0800200c9a66	1899691a-649c-11e6-8b77-86f30ca893d3	373c9b87-8606-49c7-8082-02120ddc04e4	0e071442-ad00-422c-ad6c-ef9d24a2d1da	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0575899d-1b0b-11e9-b56e-0800200c9a66	189969f6-649c-11e6-8b77-86f30ca893d3	2fcd70db-add2-43b5-ba3b-98f82c3c3147	1c183dc2-8548-44da-bd73-c36294ff54e2	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0474924d-1b0b-11e9-b56e-0800200c9a66	18996ac8-649c-11e6-8b77-86f30ca893d3	25f6e86d-ba99-4819-b6f4-2f23dbe38806	4f78169d-dc61-4dc3-a335-d7de00b7e646	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0474234d-1b0b-11e9-b56e-0800200c9a66	18996b9a-649c-11e6-8b77-86f30ca893d3	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	97e58efe-1fef-428c-a6bc-eecfcf083f44	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0474274d-1b0b-11e9-b56e-0800200c9a66	18996c62-649c-11e6-8b77-86f30ca893d3	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	8d440213-9e82-449f-85fa-44afaf1b0134	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+04949237-1b0b-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	1e4d5a88-5cb2-4240-bfa6-799d94d5e391	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+0474014d-1b0b-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	008b6436-5ac2-4c19-ac4d-d640fbec7818	1e4d5a88-5cb2-4240-bfa6-799d94d5e391	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+04749293-1b0b-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	21a1192b-abb9-45e8-bc52-c81ca4087240	1e4d5a88-5cb2-4240-bfa6-799d94d5e391	Loc Contact 1	Ms	Test Location	svcontact1@example.com
+\.
+
+
+--
+-- Data for Name: eligibility; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.eligibility (id, service_id) FROM stdin;
+690fb540-1b0e-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f
+\.
+
+
+--
+-- Data for Name: funding; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.funding (id, organization_id, service_id, source) FROM stdin;
+3da052c0-1b0e-11e9-b56e-0800200c9a66	1899600a-649c-11e6-8b77-86f30ca893d3	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	Funding source A
+3da052c1-1b0e-11e9-b56e-0800200c9a66	1899691a-649c-11e6-8b77-86f30ca893d3	373c9b87-8606-49c7-8082-02120ddc04e4	Federal Funding Source
+3da052c2-1b0e-11e9-b56e-0800200c9a66	1899673a-649c-11e6-8b77-86f30ca893d3	10cbc6ce-0ae5-467f-8069-18e90ec5b037	Federal Funding Source
+3da052c3-1b0e-11e9-b56e-0800200c9a66	18996ac8-649c-11e6-8b77-86f30ca893d3	25f6e86d-ba99-4819-b6f4-2f23dbe38806	Education Funding
+3da052c4-1b0e-11e9-b56e-0800200c9a66	189969f6-649c-11e6-8b77-86f30ca893d3	2fcd70db-add2-43b5-ba3b-98f82c3c3147	Funding Source X
+3da052c5-1b0e-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	TANF
+3da052c7-1b0e-11e9-b56e-0800200c9a66	18997068-649c-11e6-8b77-86f30ca893d3	21a1192b-abb9-45e8-bc52-c81ca4087240	Bubbles at The Cross
+3da052c8-1b0e-11e9-b56e-0800200c9a66	1899673a-649c-11e6-8b77-86f30ca893d3	a27a0710-72d2-41a2-8947-9d0e0e69e257	TANF
+3da052c9-1b0e-11e9-b56e-0800200c9a66	18996b9a-649c-11e6-8b77-86f30ca893d3	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	Medicaid Funding
+3da052ca-1b0e-11e9-b56e-0800200c9a66	1899600a-649c-11e6-8b77-86f30ca893d3	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	Social Care Funding
+3da052cb-1b0e-11e9-b56e-0800200c9a66	18996320-649c-11e6-8b77-86f30ca893d3	25870bcf-7528-4e05-8f0c-7e639075ce71	Education Funding
+\.
+
+
+--
+-- Data for Name: language; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.language (id, service_id, location_id, language) FROM stdin;
+76c2ad40-1b0f-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	English
+8b01c840-1b0f-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	Spanish
+8b047480-1b0f-11e9-b56e-0800200c9a66	25870bcf-7528-4e05-8f0c-7e639075ce71	30b83ee0-64a1-11e6-8b77-86f30ca893d3	Spanish
+8b047640-1b0f-11e9-b56e-0800200c9a66	10cbc6ce-0ae5-467f-8069-18e90ec5b037	30b83fee-64a1-11e6-8b77-86f30ca893d3	English
+8b047440-1b0f-11e9-b56e-0800200c9a66	a27a0710-72d2-41a2-8947-9d0e0e69e257	30b83fee-64a1-11e6-8b77-86f30ca893d3	Spanish
+8b474840-1b0f-11e9-b56e-0800200c9a66	c28f4d9f-10b2-4baf-a727-a31ae79063ce	30b841d8-64a1-11e6-8b77-86f30ca893d3	English
+8b464840-1b0f-11e9-b56e-0800200c9a66	c28f4d9f-10b2-4baf-a727-a31ae79063ce	30b841d8-64a1-11e6-8b77-86f30ca893d3	Spanish
+8b074840-1b0f-11e9-b56e-0800200c9a66	373c9b87-8606-49c7-8082-02120ddc04e4	30b842c8-64a1-11e6-8b77-86f30ca893d3	English
+8b058580-1b0f-11e9-b56e-0800200c9a66	2fcd70db-add2-43b5-ba3b-98f82c3c3147	30b843a4-64a1-11e6-8b77-86f30ca893d3	English
+8b474593-1b0f-11e9-b56e-0800200c9a66	25f6e86d-ba99-4819-b6f4-2f23dbe38806	30b84570-64a1-11e6-8b77-86f30ca893d3	English
+8b484740-1b0f-11e9-b56e-0800200c9a66	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	30b8475a-64a1-11e6-8b77-86f30ca893d3	Spanish
+8b559840-1b0f-11e9-b56e-0800200c9a66	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	30b8482c-64a1-11e6-8b77-86f30ca893d3	English
+8b585940-1b0f-11e9-b56e-0800200c9a66	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	30b84a0c-64a1-11e6-8b77-86f30ca893d3	English
+8b485840-1b0f-11e9-b56e-0800200c9a66	008b6436-5ac2-4c19-ac4d-d640fbec7818	30b84a0c-64a1-11e6-8b77-86f30ca893d3	English
+8b575840-1b0f-11e9-b56e-0800200c9a66	21a1192b-abb9-45e8-bc52-c81ca4087240	30b84a0c-64a1-11e6-8b77-86f30ca893d3	English
+\.
+
+
+--
+-- Data for Name: location; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.location (id, organization_id, name, alternate_name, description, transportation, latitude, longitude) FROM stdin;
+30b83ee0-64a1-11e6-8b77-86f30ca893d3	18996320-649c-11e6-8b77-86f30ca893d3	4830 Highland Drive	Highland location	This call center is not open to the public.	Bus route 225	39.428192	-119.897426
+30b83fee-64a1-11e6-8b77-86f30ca893d3	1899673a-649c-11e6-8b77-86f30ca893d3	Beachside Example City Warehouses	Beachside location	Access is restricted to authorised distributors and suppliers.	Near Metro Red line Example station	37.838381	-122.437474
+30b841d8-64a1-11e6-8b77-86f30ca893d3	1899683e-649c-11e6-8b77-86f30ca893d3	The Example Center	The center	Therapy is provided on the 5th floor which is open to visitors with appointments only.	no local transportation	39.272781	-120.474714
+30b843a4-64a1-11e6-8b77-86f30ca893d3	189969f6-649c-11e6-8b77-86f30ca893d3	The Example Center	The center	The spaces are open to the public.	Bus route 373	40.474749	-116.474748
+30b84570-64a1-11e6-8b77-86f30ca893d3	18996ac8-649c-11e6-8b77-86f30ca893d3	The Roz Bernstein Building	Bernstein bldg	Private offices that are not open to the public.	Metro train Blue line 	38.747474	-117.374743
+30b8475a-64a1-11e6-8b77-86f30ca893d3	18996b9a-649c-11e6-8b77-86f30ca893d3	Example City Hall	City Hall Location	This is the location of the offices - parks are located throughout Example City.	bus route 102	36.476474	-116.374747
+30b84a0c-64a1-11e6-8b77-86f30ca893d3	18997068-649c-11e6-8b77-86f30ca893d3	St Cross Universal Church	Universal Church	The venue is open to the public for church services - personal care is provided on-site.	local transportation available	41.474747	-119.374747
+30b842c8-64a1-11e6-8b77-86f30ca893d3	1899691a-649c-11e6-8b77-86f30ca893d3	Example City Silvers Building	The Shires	The Shires is open to the public everyday.	Metro bus route 262	38.282828	-114.364648
+30b8482c-64a1-11e6-8b77-86f30ca893d3	18996c62-649c-11e6-8b77-86f30ca893d3	Example City Hall	The City's Kitchen	This soup kitchen provides hot meals only.	accessible via metro and bus	35.647478	-115.364648
+30b83c60-64a1-11e6-8b77-86f30ca893d3	1899600a-649c-11e6-8b77-86f30ca893d3	Sanctuary on 5th Street	5th street	This is the main office and is open to the public during office hours.	On the Number 41 bus route.	38.278737	-115.273737
+\.
+
+
+--
+-- Data for Name: meta_table_description; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.meta_table_description (id, name, language, character_set) FROM stdin;
+7bc6c950-1b11-11e9-b56e-0800200c9a66	Sample meta description	English	UTF-8
+\.
+
+
+--
+-- Data for Name: metadata; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.metadata (id, resource_id, resource_type, last_action_date, last_action_type, field_name, previous_value, replacement_value, updated_by) FROM stdin;
+ede4c196-45d9-4339-8944-bad0e4ff3cee	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	contact	2018-09-15 15:53:00	create	name	test	Sanctuary Example City	Sample user
+\.
+
+
+--
+-- Data for Name: organization; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.organization (id, name, alternate_name, description, email, url, tax_status, tax_id, year_incorporated, legal_status) FROM stdin;
+1899600a-649c-11e6-8b77-86f30ca893d3	Sanctuary Example City	\N	Sanctuary assists homeless individuals find housing and employment.	sanctuary@example.com	http://example.com	nonprofit	574374770	1997	non-profit
+18996320-649c-11e6-8b77-86f30ca893d3	Youth in Focus Example City	\N	Youth in Focus programs provide pathways for low-income young people to rebuild their lives and community through work and education.	YIF@example.com	http://example.com	nonprofit	574374771	2000	non-profit
+1899673a-649c-11e6-8b77-86f30ca893d3	Example City Food for Charities	\N	Example City Food for Charities acquires in-date food that would otherwise be wasted and works with local organisations to redistribute food to vulnerable communities.	city-food@example.com	http://example.com	nonprofit	574374772	2001	non-profit
+1899683e-649c-11e6-8b77-86f30ca893d3	Example City Family Project	\N	The Example City Famly Project provides inclusive community based family therapy for the citizens of Example City.	\N	http://example.com	nonprofit	574374773	2002	non-profit
+1899691a-649c-11e6-8b77-86f30ca893d3	Example City Silvers	\N	Provision of services for older people in their homes to allow them to continue living in their communities with dignity. Serivices include: <ul>\n  <li>Personal Care</li>\n  <li>Cleaning</li>\n  <li>Shopping</li>\n</ul>	silvers@example.com	http://example.com	nonprofit	574374774	2003	non-profit
+189969f6-649c-11e6-8b77-86f30ca893d3	Example City Carnival Bay	\N	Example City Carnival Bay provides free and low-cost spaces for art therapy projects designed to help those with mental health needs.	\N	http://example.com	nonprofit	574374775	2004	non-profit
+18996ac8-649c-11e6-8b77-86f30ca893d3	Roz Bernstein Sample Org	Roz Bernstein's	The charity's provides support for students and teachers in Example City on matters that interfere with education by providing meals, laundry, legal advice and other facilities to keep students learning and support teaching staff.	\N	http://example.com	nonprofit	574374776	2005	non-profit
+18996b9a-649c-11e6-8b77-86f30ca893d3	AP Example City	\N	Associated Parks is part of the Example City Town Hall, providing access to green spaces within the city for therapeutic and heallthy living programs.	ap@example.gov	http://example.com	nonprofit	574374777	2006	non-profit
+18996c62-649c-11e6-8b77-86f30ca893d3	Example House League of Friends	\N	Example House League of Friends provides hot meals at soup kitchens throughout Example City for anyone in need.	\N	http://example.com	nonprofit	574374778	2007	non-profit
+18997068-649c-11e6-8b77-86f30ca893d3	Example Cross Trust	The Cross Trust	The Example Cross Trust distributes care packages to the most vulnerable in Example City and provides safe spaces for personal care such as laundry and bathing.	thecross@example.com	http://example.com	nonprofit	574374779	2008	non-profit
+\.
+
+
+--
+-- Data for Name: other_attribute; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.other_attribute (id, link_id, link_type, taxonomy_term_id) FROM stdin;
+\.
+
+
+--
+-- Data for Name: payment_accepted; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.payment_accepted (id, service_id, payment) FROM stdin;
+48535130-1b0f-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	cash
+5bb9bf70-1b0f-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	credit card
+\.
+
+
+--
+-- Data for Name: phone; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.phone (id, location_id, service_id, organization_id, contact_id, service_at_location_id, number, extension, type, language, description, department) FROM stdin;
+3733e828-58e5-4ff5-9dc6-ae24f92a0f56	30b84570-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(0123) 4567 8900	42	voice	en, es	Roz Bernstein Main Office	\N
+7ed24899-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18997068-649c-11e6-8b77-86f30ca893d3	\N	\N	(223) 346 12361	\N	voice	en	Example Cross Trust Support Line	\N
+83c0ec7b-7d81-4371-b25a-037c006d33a0	\N	\N	18997068-649c-11e6-8b77-86f30ca893d3	\N	\N	(223) 346 12361	\N	textphone	en	Example Cross Trust Support Line	\N
+3d257b44-eff1-4a22-9465-7f96710848bf	\N	21a1192b-abb9-45e8-bc52-c81ca4087240	\N	\N	\N	(223) 4567 12534	\N	voice	en, es	Laundry Line: General information	\N
+e9c19752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	\N	c54183ce-b165-4e4a-9ace-57221ccc13da	(773) 2351 2461	\N	cell	\N	Managers number at Bubbles at the Cross	\N
+7ed67899-52fb-4e7b-9e25-8d665bec23ea	\N	\N	1899600a-649c-11e6-8b77-86f30ca893d3	\N	\N	(123) 232 2345	\N	voice	en	\N	\N
+83c6367b-7d81-4371-b25a-037c006d33a0	\N	\N	1899600a-649c-11e6-8b77-86f30ca893d3	\N	\N	(456) 523 2458	\N	textphone	en	\N	\N
+7e453899-52fb-4e7b-9e25-8d665bec23ea	\N	\N	1899673a-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 353 2636	\N	voice	en	\N	\N
+8446ec7b-7d81-4371-b25a-037c006d33a0	\N	\N	1899673a-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 346 1236	\N	textphone	en	\N	\N
+8565ec7b-7d81-4371-b25a-037c006d33a0	\N	\N	1899673a-649c-11e6-8b77-86f30ca893d3	\N	\N	(234) 346 1236	\N	cell	en	\N	\N
+7e464799-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18996320-649c-11e6-8b77-86f30ca893d3	\N	\N	(123) 232 2345	\N	voice	en	\N	\N
+7e757589-52fb-4e7b-9e25-8d665bec23ea	\N	\N	1899683e-649c-11e6-8b77-86f30ca893d3	\N	\N	(223) 346 1236	\N	voice	en	\N	\N
+7e445499-52fb-4e7b-9e25-8d665bec23ea	\N	\N	1899691a-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 232 2345	\N	voice	en	\N	\N
+7e455569-52fb-4e7b-9e25-8d665bec23ea	\N	\N	189969f6-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 346 1236	\N	voice	en	\N	\N
+47475499-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18996ac8-649c-11e6-8b77-86f30ca893d3	\N	\N	(323) 453 3535	\N	voice	en	\N	\N
+35363769-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18996b9a-649c-11e6-8b77-86f30ca893d3	\N	\N	(323) 454 3546	\N	voice	en	\N	\N
+72353499-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18996c62-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 464 4857	\N	cell	en	\N	\N
+7e464769-52fb-4e7b-9e25-8d665bec23ea	\N	\N	18997068-649c-11e6-8b77-86f30ca893d3	\N	\N	(454) 346 1236	\N	cell	en	\N	\N
+3454e828-58e5-4ff5-9dc6-ae24f92a0f56	30b83c60-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(123) 456 8900	42	voice	en, es	\N	\N
+4664e828-58e5-4ff5-9dc6-ae24f92a0f56	30b83c60-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(456) 353 4647	\N	cell	en, es	\N	\N
+34774328-58e5-4ff5-9dc6-ae24f92a0f56	30b83ee0-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(454) 454 4540	\N	voice	en, es	\N	\N
+34747bc8-58e5-4ff5-9dc6-ae24f92a0f56	30b83fee-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(123) 456 4640	\N	voice	en, es	\N	\N
+33639b28-58e5-4ff5-9dc6-ae24f92a0f56	30b83fee-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(443) 456 5750	\N	textphone	en, es	\N	\N
+44774ab8-58e5-4ff5-9dc6-ae24f92a0f56	30b841d8-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(454) 454 4747	\N	voice	en, es	\N	\N
+37345468-58e5-4ff5-9dc6-ae24f92a0f56	30b842c8-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(454) 464 3420	\N	cell	en, es	\N	\N
+4647e828-58e5-4ff5-9dc6-ae24f92a0f56	30b843a4-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(464) 757 3900	\N	voice	en, es	\N	\N
+4547ae28-58e5-4ff5-9dc6-ae24f92a0f56	30b8475a-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(253) 646 4747	\N	cell	en, es	\N	\N
+4647bd28-58e5-4ff5-9dc6-ae24f92a0f56	30b8482c-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(223) 464 9576	\N	cell	en, es	\N	\N
+34037ac8-58e5-4ff5-9dc6-ae24f92a0f56	30b84a0c-64a1-11e6-8b77-86f30ca893d3	\N	\N	\N	\N	(223) 456 3643	\N	cell	en, es	\N	\N
+e9474752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0cd7cbd0-1b0b-11e9-b56e-0800200c9a66	\N	(123) 346 1236	\N	voice	en	\N	\N
+e4646752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0cd7cbd0-1b0b-11e9-b56e-0800200c9a66	\N	(123) 454 6536	\N	textphone	en	\N	\N
+e9474952-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	067647d0-1b0b-11e9-b56e-0800200c9a66	\N	(456) 346 1236	\N	voice	en	\N	\N
+e9959552-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	03638490-1b0b-11e9-b56e-0800200c9a66	\N	(454) 346 1236	\N	voice	en	\N	\N
+e9c49494-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	08576576-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 1236	\N	voice	en	\N	\N
+e9c59502-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	04647648-1b0b-11e9-b56e-0800200c9a66	\N	(475) 346 1236	\N	voice	en	\N	\N
+e9485852-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	04657580-1b0b-11e9-b56e-0800200c9a66	\N	(641) 346 1236	\N	cell	en	\N	\N
+e9484842-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	056073d0-1b0b-11e9-b56e-0800200c9a66	\N	(363) 346 6336	\N	voice	en	\N	\N
+e9495852-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0373abc0-1b0b-11e9-b56e-0800200c9a66	\N	(423) 346 4646	\N	voice	en	\N	\N
+e9494050-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	047487ae-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 4646	\N	voice	en	\N	\N
+e9253742-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0474874d-1b0b-11e9-b56e-0800200c9a66	\N	(623) 346 4856	\N	voice	en	\N	\N
+e9495432-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0464747d-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 5946	\N	cell	en	\N	\N
+e9405722-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0473934d-1b0b-11e9-b56e-0800200c9a66	\N	(223) 346 5856	\N	voice	en	\N	\N
+e9405752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0447583d-1b0b-11e9-b56e-0800200c9a66	\N	(453) 346 4656	\N	voice	en	\N	\N
+e9595732-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	04484930-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 4656	\N	voice	en	\N	\N
+e9506762-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	044649ab-1b0b-11e9-b56e-0800200c9a66	\N	(443) 346 5756	\N	voice	en	\N	\N
+e9505732-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0a74744d-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 5752	\N	cell	en	\N	\N
+e9596032-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0575899d-1b0b-11e9-b56e-0800200c9a66	\N	(456) 346 4736	\N	voice	en	\N	\N
+e9495732-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0474924d-1b0b-11e9-b56e-0800200c9a66	\N	(464) 346 5036	\N	voice	en	\N	\N
+e9506737-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0474234d-1b0b-11e9-b56e-0800200c9a66	\N	(454) 346 4656	\N	voice	en	\N	\N
+e9305732-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0474274d-1b0b-11e9-b56e-0800200c9a66	\N	(565) 346 5746	\N	voice	en	\N	\N
+e9450363-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	04949237-1b0b-11e9-b56e-0800200c9a66	\N	(485) 346 4651	\N	voice	en	\N	\N
+e9419752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	0474014d-1b0b-11e9-b56e-0800200c9a66	\N	(646) 346 5752	\N	voice	en	\N	\N
+e9465752-c8d4-494f-b527-b65c9c86c8ce	\N	\N	\N	04749293-1b0b-11e9-b56e-0800200c9a66	\N	(223) 346 1236	\N	cell	en	\N	\N
+ced67899-52fb-4e7b-9e25-8d665bec23ea	\N	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	\N	\N	\N	(123) 232 2345	\N	voice	en	\N	\N
+c3c6367b-7d81-4371-b25a-037c006d33a0	\N	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	\N	\N	\N	(456) 523 2458	\N	textphone	en	\N	\N
+ce453899-52fb-4e7b-9e25-8d665bec23ea	\N	10cbc6ce-0ae5-467f-8069-18e90ec5b037	\N	\N	\N	(454) 353 2636	\N	voice	en	\N	\N
+c446ec7b-7d81-4371-b25a-037c006d33a0	\N	10cbc6ce-0ae5-467f-8069-18e90ec5b037	\N	\N	\N	(454) 346 1236	\N	textphone	en	\N	\N
+c565ec7b-7d81-4371-b25a-037c006d33a0	\N	10cbc6ce-0ae5-467f-8069-18e90ec5b037	\N	\N	\N	(234) 346 1236	\N	cell	en	\N	\N
+ce464799-52fb-4e7b-9e25-8d665bec23ea	\N	25870bcf-7528-4e05-8f0c-7e639075ce71	\N	\N	\N	(123) 232 2345	\N	voice	en	\N	\N
+ce757589-52fb-4e7b-9e25-8d665bec23ea	\N	c28f4d9f-10b2-4baf-a727-a31ae79063ce	\N	\N	\N	(223) 346 1236	\N	voice	en	\N	\N
+ce445499-52fb-4e7b-9e25-8d665bec23ea	\N	373c9b87-8606-49c7-8082-02120ddc04e4	\N	\N	\N	(454) 232 2345	\N	voice	en	\N	\N
+ce455569-52fb-4e7b-9e25-8d665bec23ea	\N	2fcd70db-add2-43b5-ba3b-98f82c3c3147	\N	\N	\N	(454) 346 1236	\N	voice	en	\N	\N
+c7475499-52fb-4e7b-9e25-8d665bec23ea	\N	25f6e86d-ba99-4819-b6f4-2f23dbe38806	\N	\N	\N	(323) 453 3535	\N	voice	en	\N	\N
+c5363769-52fb-4e7b-9e25-8d665bec23ea	\N	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	\N	\N	\N	(323) 454 3546	\N	voice	en	\N	\N
+c2353499-52fb-4e7b-9e25-8d665bec23ea	\N	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	\N	\N	\N	(454) 464 4857	\N	cell	en	\N	\N
+ce464769-52fb-4e7b-9e25-8d665bec23ea	\N	008b6436-5ac2-4c19-ac4d-d640fbec7818	\N	\N	\N	(454) 346 1236	\N	cell	en	\N	\N
+\.
+
+
+--
+-- Data for Name: physical_address; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.physical_address (id, location_id, attention, address_1, address_2, address_3, address_4, city, region, state_province, postal_code, country) FROM stdin;
+da464710-1b0b-11e9-b56e-0800200c9a66	30b83ee0-64a1-11e6-8b77-86f30ca893d3	Loc Contact 2	Address Line1 2	Address Line2 2	\N	\N	Knickerbocker	New York County	NY	10002	US
+da487493-1b0b-11e9-b56e-0800200c9a66	30b83fee-64a1-11e6-8b77-86f30ca893d3	Loc Contact 3	Address Line1 3	Address Line2 3	\N	\N	Staten Island	Richmond County	NY	10308	US
+da484840-1b0b-11e9-b56e-0800200c9a66	30b841d8-64a1-11e6-8b77-86f30ca893d3	Loc Contact 4	Address Line1 4	Address Line2 4	\N	\N	Staten Island	Richmond County	NY	10314	US
+da494740-1b0b-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	Loc Contact 5	Address Line1 5	Address Line2 5	\N	\N	Bronx	Bronx County	NY	10453	US
+da474730-1b0b-11e9-b56e-0800200c9a66	30b843a4-64a1-11e6-8b77-86f30ca893d3	Loc Contact 6	Address Line1 6	Address Line2 6	\N	\N	Bronx	Bronx County	NY	10471	US
+da393630-1b0b-11e9-b56e-0800200c9a66	30b84570-64a1-11e6-8b77-86f30ca893d3	Loc Contact 7	Address Line1 7	Address Line2 7	\N	\N	Baldwin	Westchester	NY	10505	US
+da464740-1b0b-11e9-b56e-0800200c9a66	30b8475a-64a1-11e6-8b77-86f30ca893d3	Loc Contact 8	Address Line1 8	Address Line2 8	\N	\N	Baldwin	Westchester	NY	10505	US
+da556310-1b0b-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	Contact 1	Address 1	Address 2	\N	\N	New York City	New York County	NY	10001	US
+da464760-1b0b-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	Loc Contact 1	Address Line1 1	Address Line2 1	\N	\N	New York City	New York County	NY	10001	US
+da043630-1b0b-11e9-b56e-0800200c9a66	30b8482c-64a1-11e6-8b77-86f30ca893d3	Loc Contact 9	Address Line1 9	Address Line2 9	\N	\N	New York City	New York County	NY	10002	US
+da392620-1b0b-11e9-b56e-0800200c9a66	30b84a0c-64a1-11e6-8b77-86f30ca893d3	Loc Contact A	Address Line1 A	Address Line2 A	\N	\N	New York City	New York County	NY	10003	US
+\.
+
+
+--
+-- Data for Name: postal_address; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.postal_address (id, location_id, attention, address_1, address_2, address_3, address_4, city, region, state_province, postal_code, country) FROM stdin;
+da297710-1b0b-11e9-b56e-0800200c9a66	30b83ee0-64a1-11e6-8b77-86f30ca893d3	Loc Contact 2	Postal Line1 2	Postal Line2 2	\N	\N	Knickerbocker	New York County	NY	10002	US
+da252523-1b0b-11e9-b56e-0800200c9a66	30b83fee-64a1-11e6-8b77-86f30ca893d3	Loc Contact 3	Postal Line1 3	Postal Line2 3	\N	\N	Staten Island	Richmond County	NY	10308	US
+da363630-1b0b-11e9-b56e-0800200c9a66	30b841d8-64a1-11e6-8b77-86f30ca893d3	Loc Contact 4	PO BOX 10453-2525	Address Line2 4	\N	\N	Staten Island	Richmond County	NY	10314	US
+da362620-1b0b-11e9-b56e-0800200c9a66	30b842c8-64a1-11e6-8b77-86f30ca893d3	Loc Contact 5	Address Line1 5	Postal Line2 5	\N	\N	Bronx	Bronx County	NY	10453	US
+da304630-1b0b-11e9-b56e-0800200c9a66	30b843a4-64a1-11e6-8b77-86f30ca893d3	Loc Contact 6	Postal Line1 6	Postal Line2 6	\N	\N	Bronx	Bronx County	NY	10471	US
+da203920-1b0b-11e9-b56e-0800200c9a66	30b84570-64a1-11e6-8b77-86f30ca893d3	Loc Contact 7	Postal Line1 7	Postal Line2 7	\N	\N	Baldwin	Westchester	NY	10505	US
+da202620-1b0b-11e9-b56e-0800200c9a66	30b8475a-64a1-11e6-8b77-86f30ca893d3	Loc Contact 8	PO BOX	Postal Line2 8	\N	\N	Baldwin	Westchester	NY	10505	US
+c7071b40-1b0c-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	Contact 1	Address 1	Address 2	\N	\N	New York City	New York County	NY	10001	US
+da373760-1b0b-11e9-b56e-0800200c9a66	30b83c60-64a1-11e6-8b77-86f30ca893d3	Loc Contact 1	PO Box 10001-1023	\N	\N	\N	New York City	New York County	NY	10001	US
+da292637-1b0b-11e9-b56e-0800200c9a66	30b8482c-64a1-11e6-8b77-86f30ca893d3	Loc Contact 9	Postal Line1 9	Postal Line2 9	\N	\N	New York City	New York County	NY	10002	US
+da292763-1b0b-11e9-b56e-0800200c9a66	30b84a0c-64a1-11e6-8b77-86f30ca893d3	Loc Contact A	Postal Line1 A	Postal Line2 A	\N	\N	New York City	New York County	NY	10003	US
+\.
+
+
+--
+-- Data for Name: program; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.program (id, organization_id, name, alternate_name) FROM stdin;
+7c92d013-1b0a-11e9-b56e-0800200c9a	1899673a-649c-11e6-8b77-86f30ca893d3	TANF	Temporary Assistance for Needy Families
+7c92d014-1b0a-11e9-b56e-0800200c9a	1899683e-649c-11e6-8b77-86f30ca893d3	Homelessness	Homelessness Program
+7c92d016-1b0a-11e9-b56e-0800200c9a	1899691a-649c-11e6-8b77-86f30ca893d3	For Seniors	Program for Seniors 
+7c92d018-1b0a-11e9-b56e-0800200c9a	189969f6-649c-11e6-8b77-86f30ca893d3	SNAP	Suplemental Nutrition Assistance Program
+7c92d020-1b0a-11e9-b56e-0800200c9a	18996ac8-649c-11e6-8b77-86f30ca893d3	For Disabled	programs for Persons with Disabilities 
+7c92d021-1b0a-11e9-b56e-0800200c9a	18996b9a-649c-11e6-8b77-86f30ca893d3	Food Asisatnce	Food Assiatance Program 
+7c92d024-1b0a-11e9-b56e-0800200c9a	18996c62-649c-11e6-8b77-86f30ca893d3	For Disabled	programs for Persons with Disabilities 
+7c92d026-1b0a-11e9-b56e-0800200c9a	18997068-649c-11e6-8b77-86f30ca893d3	Homelessness	Homelessness Program
+7c92d010-1b0a-11e9-b56e-0800200c9a	1899600a-649c-11e6-8b77-86f30ca893d3	Government Assistance	Government Assistance Program
+\.
+
+
+--
+-- Data for Name: required_document; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.required_document (id, service_id, document) FROM stdin;
+20107680-1b0f-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	Sample required document
+\.
+
+
+--
+-- Data for Name: schedule; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.schedule (id, service_id, location_id, service_at_location_id, valid_from, valid_to, dtstart, timezone, until, count, wkst, freq, "interval", byday, byweekno, bymonthday, byyearday, description, opens_at, closes_at) FROM stdin;
+6ef92fa0-1b0d-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	d254626c-6858-46ad-850a-6e1c53ea463a	\N	\N	\N	\N	\N	\N	\N	\N	\N	Sat	6	\N	\N	service schedule for weekend	10:00:00	14:00:00
+756c2fe0-1b0d-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	d254626c-6858-46ad-850a-6e1c53ea463a	\N	\N	\N	\N	\N	\N	\N	\N	\N	Sun	7	\N	\N	service schedule for weekend	\N	\N
+754646e0-1b0d-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	d254626c-6858-46ad-850a-6e1c53ea463a	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+fa9dbdb0-1b0c-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	d254626c-6858-46ad-850a-6e1c53ea463a	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1,2,3,4,5	\N	\N	service schedule for weekday	09:00:00	17:00:00
+755656e0-1b0d-11e9-b56e-0800200c9a66	25870bcf-7528-4e05-8f0c-7e639075ce71	30b83ee0-64a1-11e6-8b77-86f30ca893d3	a6e824f6-aac4-4472-ae24-a27c0253ede3	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75476470-1b0d-11e9-b56e-0800200c9a66	10cbc6ce-0ae5-467f-8069-18e90ec5b037	30b83fee-64a1-11e6-8b77-86f30ca893d3	6b524072-5768-4a92-b0fd-fa87a77311b2	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75757fe0-1b0d-11e9-b56e-0800200c9a66	a27a0710-72d2-41a2-8947-9d0e0e69e257	30b83fee-64a1-11e6-8b77-86f30ca893d3	e7361647-5350-4d6a-aecb-504f9c4a8577	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75374840-1b0d-11e9-b56e-0800200c9a66	c28f4d9f-10b2-4baf-a727-a31ae79063ce	30b841d8-64a1-11e6-8b77-86f30ca893d3	dad28eee-00f9-4dac-b891-d7ba85035928	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75575850-1b0d-11e9-b56e-0800200c9a66	373c9b87-8606-49c7-8082-02120ddc04e4	30b842c8-64a1-11e6-8b77-86f30ca893d3	0e071442-ad00-422c-ad6c-ef9d24a2d1da	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+755758e0-1b0d-11e9-b56e-0800200c9a66	2fcd70db-add2-43b5-ba3b-98f82c3c3147	30b843a4-64a1-11e6-8b77-86f30ca893d3	1c183dc2-8548-44da-bd73-c36294ff54e2	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75484840-1b0d-11e9-b56e-0800200c9a66	25f6e86d-ba99-4819-b6f4-2f23dbe38806	30b84570-64a1-11e6-8b77-86f30ca893d3	4f78169d-dc61-4dc3-a335-d7de00b7e646	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75465830-1b0d-11e9-b56e-0800200c9a66	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	30b8475a-64a1-11e6-8b77-86f30ca893d3	97e58efe-1fef-428c-a6bc-eecfcf083f44	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75475940-1b0d-11e9-b56e-0800200c9a66	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	30b8482c-64a1-11e6-8b77-86f30ca893d3	8d440213-9e82-449f-85fa-44afaf1b0134	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+756657e0-1b0d-11e9-b56e-0800200c9a66	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	30b84a0c-64a1-11e6-8b77-86f30ca893d3	1e4d5a88-5cb2-4240-bfa6-799d94d5e391	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75646fe0-1b0d-11e9-b56e-0800200c9a66	008b6436-5ac2-4c19-ac4d-d640fbec7818	30b84a0c-64a1-11e6-8b77-86f30ca893d3	6d42bcb1-bc23-4b06-873d-857aafc4e3e9	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+75565680-1b0d-11e9-b56e-0800200c9a66	21a1192b-abb9-45e8-bc52-c81ca4087240	30b84a0c-64a1-11e6-8b77-86f30ca893d3	c54183ce-b165-4e4a-9ace-57221ccc13da	\N	\N	\N	\N	\N	\N	\N	\N	\N	Mon,Tue,Wed,Thu,Fri	1-5	\N	\N	service schedule for weekday	09:00:00	18:00:00
+\.
+
+
+--
+-- Data for Name: service; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.service (id, organization_id, program_id, name, alternate_name, description, url, email, status, interpretation_services, application_process, wait_time, fees, accreditations, licenses) FROM stdin;
+25870bcf-7528-4e05-8f0c-7e639075ce71	18996320-649c-11e6-8b77-86f30ca893d3	\N	Young Minds	Minds	Young Minds program helps young people complete their high school education, preparing them for lifelong success with mentorship, funding and community support. Our engagement with the students begins with an evaluation to provide each young person with a personalised program for success.	www.youngminds.com	contact@youngminds.com	active	available	\N	\N	\N	my accredtation	social service licenses 
+008b6436-5ac2-4c19-ac4d-d640fbec7818	18997068-649c-11e6-8b77-86f30ca893d3	\N	Wash & Go at The Cross	Wash & Go	Provides dignity for our homeless citizens with a free, clean place to shower and take care of personal needs. Stalls are lockable for privacy and safety. A caretaker is available at all times.This service is supported by matched donations from City Hall.	www.washngo.com	contact@washngo.com	inactive	over the phone	\N	\N	\N	all credentials	licensed organizaition
+21a1192b-abb9-45e8-bc52-c81ca4087240	18997068-649c-11e6-8b77-86f30ca893d3	\N	Bubbles at The Cross	Bubbles	Bubbles At The Cross provides low-cost and pay-as-you-can services to anyone needing laundry services in Example City. 	www.thebubles.com	info@thebubbles.com	active	remote call service	\N	\N	\N	my credentials and qualitifications	operator licensed
+c89eb05c-62dd-4b64-b494-0cc347b6ea7f	1899600a-649c-11e6-8b77-86f30ca893d3	7c92d010-1b0a-11e9-b56e-0800200c9a	Never Homeless Helpline	Never Homeless	The Never Homeless Helpline refers any persons without access to housing to services within Example City. Services are first come, first serve. Due to demand, there may be a waiting list.	neverhomeless.com	neverhomeless@example.com	active	over the phone	Call for further information	\N	\N	all staff has adquate credentials	licensed staff
+10cbc6ce-0ae5-467f-8069-18e90ec5b037	1899673a-649c-11e6-8b77-86f30ca893d3	7c92d013-1b0a-11e9-b56e-0800200c9a	Grocery Tax Break Donation	Tax break	A service to collect and report on in-date food from grocery stores within Example City limits, allowing stores to benefit from city-funded tax breaks as well as helping to feed those in need.	grocerytaxbreak.com	gocerytaxbreak@gmail.com	active	video connection	\N	\N	\N	accredited by XYZ 	licenses are available to verify
+a27a0710-72d2-41a2-8947-9d0e0e69e257	1899673a-649c-11e6-8b77-86f30ca893d3	7c92d018-1b0a-11e9-b56e-0800200c9a	Food Safety Program	Food Safety	A pay-as-you-feel training program for nonprofit organisations perparing or seeking to prepare food within Example City.	foodsafetyfirst.com	manager@foodsafetyfirst.com	inactive	automated system	\N	\N	\N	accredited by government	fully licensed 
+c28f4d9f-10b2-4baf-a727-a31ae79063ce	1899683e-649c-11e6-8b77-86f30ca893d3	7c92d014-1b0a-11e9-b56e-0800200c9a	Al-Anon Family Group	Al-Anon	Provides support for family and friends of people with a drinking problem.	family.alanon.com	faimily@alanon.com	active	video remote	\N	\N	\N	accreditated 	licensed locations
+373c9b87-8606-49c7-8082-02120ddc04e4	1899691a-649c-11e6-8b77-86f30ca893d3	7c92d016-1b0a-11e9-b56e-0800200c9a	Shop Assist	The Shop	Provides assisted social shopping for the elderly with twice weekly bus services and assistance provided by volunteers. This service is heavily subscribed and waiting period may apply.	www.myshopassist.com	contact@shopasist.com	active	video remote	Call our offices to apply or for more information	28 days	\N	all staff have adqute credentials 	licensed to provide services
+2fcd70db-add2-43b5-ba3b-98f82c3c3147	189969f6-649c-11e6-8b77-86f30ca893d3	7c92d018-1b0a-11e9-b56e-0800200c9a	Example City Summer Camp	City Summer	Carnival Bay provides summer camp sessions for residents of Example City. Summer camp activities include: arts & crafts, field trips, indoor activities, outdoor games, free swim lessons, and swimming.	examplecitysummercamp.org	info@examplecitysummercamp.org	active	phone service	\N	\N	\N	organiation credentials are available	licensed to operate
+25f6e86d-ba99-4819-b6f4-2f23dbe38806	18996ac8-649c-11e6-8b77-86f30ca893d3	7c92d020-1b0a-11e9-b56e-0800200c9a	Dear Teacher Skills Refresh	Teacher Skills	The skills refresh offers teaching staff in Example City free refresher courses in <ul>\n  <li>Digital Skills</li>\n  <li>Childhood Development</li>\n  <li>Languages: Spanish</li>\n</ul>	techkerskillsrefresh.com	contact@techkerskillsrefresh.com	inactive	in-person assistance	\N	\N	\N	accredited by state government	operative licenses
+9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	18996b9a-649c-11e6-8b77-86f30ca893d3	7c92d021-1b0a-11e9-b56e-0800200c9a	Parks Disability Services	Parks Disability	Parks Disability Service works to make Example City parks and their recreation programs accessible to persons with disabilities, removing architectural barriers and creating special programs for the disabled, such as wheelchair tennis, quad rugby, and beep baseball.	parksdisabilityservices.org	contact@parksdisabilityservices.org	active	remote call 	\N	\N	\N	accredited by XYZ	human services licensed 
+756b5a9d-7d65-4063-b5f2-d08ccf01c55e	18996c62-649c-11e6-8b77-86f30ca893d3	7c92d024-1b0a-11e9-b56e-0800200c9a	The City's Kitchen	City Kitchen	The Soup Kitchen operates seven days a week, 365 days a year. It serves two hot meals per day.	www.thecitykitchen.com	cook@thecitykitchen.com	active	support all languages	\N	\N	\N	accredited for services	licensed to operate 
+62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	18997068-649c-11e6-8b77-86f30ca893d3	7c92d026-1b0a-11e9-b56e-0800200c9a	Meals To-Go at The Cross	Meals To-Go	Meals To-Go at The Cross provides a bag lunch on a pay-as-you-can basis. Donors can buy a healthy bag lunch and donate a bag lunch to anyone in need of a meal. For a pre-paid meal, please take a prepaid slip from our "Feed the City" wall.	mealstogo.org	info@mealstogo.org	active	call us now	\N	\N	\N	all credentials 	licensed
+\.
+
+
+--
+-- Data for Name: service_area; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.service_area (id, service_id, service_area, description) FROM stdin;
+c7476db0-1b0e-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	Sample service area	A description about the service area
+c74783b0-1b0e-11e9-b56e-0800200c9a66	008b6436-5ac2-4c19-ac4d-d640fbec7818	Service area A	\N
+c7363db0-1b0e-11e9-b56e-0800200c9a66	10cbc6ce-0ae5-467f-8069-18e90ec5b037	Service area B	\N
+c4646db0-1b0e-11e9-b56e-0800200c9a66	21a1192b-abb9-45e8-bc52-c81ca4087240	Service area C	\N
+c3836db0-1b0e-11e9-b56e-0800200c9a66	25870bcf-7528-4e05-8f0c-7e639075ce71	Service area D	\N
+c73638b0-1b0e-11e9-b56e-0800200c9a66	25f6e86d-ba99-4819-b6f4-2f23dbe38806	Service area E	\N
+c76373b0-1b0e-11e9-b56e-0800200c9a66	2fcd70db-add2-43b5-ba3b-98f82c3c3147	Service area F	\N
+c73373b0-1b0e-11e9-b56e-0800200c9a66	373c9b87-8606-49c7-8082-02120ddc04e4	Service area G	\N
+c7393930-1b0e-11e9-b56e-0800200c9a66	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	Service area H	\N
+c73839b0-1b0e-11e9-b56e-0800200c9a66	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	Service area I	\N
+c73739b0-1b0e-11e9-b56e-0800200c9a66	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	Service area J	\N
+c73393b0-1b0e-11e9-b56e-0800200c9a66	a27a0710-72d2-41a2-8947-9d0e0e69e257	Service area K	\N
+c7383930-1b0e-11e9-b56e-0800200c9a66	c28f4d9f-10b2-4baf-a727-a31ae79063ce	Service area L	\N
+c7338393-1b0e-11e9-b56e-0800200c9a66	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	Service area M	\N
+\.
+
+
+--
+-- Data for Name: service_at_location; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.service_at_location (id, service_id, location_id, description) FROM stdin;
+d254626c-6858-46ad-850a-6e1c53ea463a	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	30b83c60-64a1-11e6-8b77-86f30ca893d3	Never Homeless Helpline@Sanctuary on 5th Street
+a6e824f6-aac4-4472-ae24-a27c0253ede3	25870bcf-7528-4e05-8f0c-7e639075ce71	30b83ee0-64a1-11e6-8b77-86f30ca893d3	Young Minds@4830 Highland Drive
+6b524072-5768-4a92-b0fd-fa87a77311b2	10cbc6ce-0ae5-467f-8069-18e90ec5b037	30b83fee-64a1-11e6-8b77-86f30ca893d3	Grocery Tax Break Donation@Beachside Example City Warehouses
+e7361647-5350-4d6a-aecb-504f9c4a8577	a27a0710-72d2-41a2-8947-9d0e0e69e257	30b83fee-64a1-11e6-8b77-86f30ca893d3	Food Safety Program@Beachside Example City Warehouses
+dad28eee-00f9-4dac-b891-d7ba85035928	c28f4d9f-10b2-4baf-a727-a31ae79063ce	30b841d8-64a1-11e6-8b77-86f30ca893d3	Al-Anon Family Group@The Example Center
+0e071442-ad00-422c-ad6c-ef9d24a2d1da	373c9b87-8606-49c7-8082-02120ddc04e4	30b842c8-64a1-11e6-8b77-86f30ca893d3	Shop Assist@Example City Silvers Building
+1c183dc2-8548-44da-bd73-c36294ff54e2	2fcd70db-add2-43b5-ba3b-98f82c3c3147	30b843a4-64a1-11e6-8b77-86f30ca893d3	Example City Summer Camp@The Example Center
+4f78169d-dc61-4dc3-a335-d7de00b7e646	25f6e86d-ba99-4819-b6f4-2f23dbe38806	30b84570-64a1-11e6-8b77-86f30ca893d3	Dear Teacher Skills Refresh@The Roz Bernstein Building
+97e58efe-1fef-428c-a6bc-eecfcf083f44	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	30b8475a-64a1-11e6-8b77-86f30ca893d3	Parks Disability Services@Example City Hall
+8d440213-9e82-449f-85fa-44afaf1b0134	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	30b8482c-64a1-11e6-8b77-86f30ca893d3	The City's Kitchen@Example City Hall
+1e4d5a88-5cb2-4240-bfa6-799d94d5e391	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	30b84a0c-64a1-11e6-8b77-86f30ca893d3	Meals To-Go at The Cross@St Cross Universal Church
+6d42bcb1-bc23-4b06-873d-857aafc4e3e9	008b6436-5ac2-4c19-ac4d-d640fbec7818	30b84a0c-64a1-11e6-8b77-86f30ca893d3	Wash & Go at The Cross@St Cross Universal Church
+c54183ce-b165-4e4a-9ace-57221ccc13da	21a1192b-abb9-45e8-bc52-c81ca4087240	30b84a0c-64a1-11e6-8b77-86f30ca893d3	Bubbles at The Cross@St Cross Universal Church
+\.
+
+
+--
+-- Data for Name: service_attribute; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.service_attribute (id, service_id, taxonomy_term_id) FROM stdin;
+e4646bcf-7528-4e05-8f0c-7e639075ce71	25870bcf-7528-4e05-8f0c-7e639075ce71	df7b1271-1b0f-11e9-b56e-0800200c9a66
+e08b6436-5ac2-4c19-ac4d-d640fbec7818	008b6436-5ac2-4c19-ac4d-d640fbec7818	df7b1135-1b0f-11e9-b56e-0800200c9a66
+e1a1192b-abb9-45e8-bc52-c81ca4087240	21a1192b-abb9-45e8-bc52-c81ca4087240	df7b1136-1b0f-11e9-b56e-0800200c9a66
+e89eb05c-62dd-4b64-b494-0cc347b6ea7f	c89eb05c-62dd-4b64-b494-0cc347b6ea7f	df7b1137-1b0f-11e9-b56e-0800200c9a66
+e27a0710-72d2-41a2-8947-9d0e0e69e257	a27a0710-72d2-41a2-8947-9d0e0e69e257	df7b1131-1b0f-11e9-b56e-0800200c9a66
+e28f4d9f-10b2-4baf-a727-a31ae79063ce	c28f4d9f-10b2-4baf-a727-a31ae79063ce	df7b1150-1b0f-11e9-b56e-0800200c9a66
+efcd70db-add2-43b5-ba3b-98f82c3c3147	2fcd70db-add2-43b5-ba3b-98f82c3c3147	df7b1285-1b0f-11e9-b56e-0800200c9a66
+e5f6e86d-ba99-4819-b6f4-2f23dbe38806	25f6e86d-ba99-4819-b6f4-2f23dbe38806	df7b1356-1b0f-11e9-b56e-0800200c9a66
+e619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	9619ea6e-baa8-4b9a-9665-ca2a07cdd7b6	df7b1257-1b0f-11e9-b56e-0800200c9a66
+e2e95523-07b9-4d1b-9bcf-6cea6e2be5d8	62e95523-07b9-4d1b-9bcf-6cea6e2be5d8	df7b1131-1b0f-11e9-b56e-0800200c9a66
+e0cbc6ce-0ae5-467f-8069-18e90ec5b037	10cbc6ce-0ae5-467f-8069-18e90ec5b037	df7b1132-1b0f-11e9-b56e-0800200c9a66
+e56b5a9d-7d65-4063-b5f2-d08ccf01c55e	756b5a9d-7d65-4063-b5f2-d08ccf01c55e	df7b1132-1b0f-11e9-b56e-0800200c9a66
+e73c9b87-8606-49c7-8082-02120ddc04e4	373c9b87-8606-49c7-8082-02120ddc04e4	df7b1132-1b0f-11e9-b56e-0800200c9a66
+\.
+
+
+--
+-- Data for Name: taxonomy_term; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY public.taxonomy_term (id, term, description, parent_id, taxonomy, language) FROM stdin;
+df7b1125-1b0f-11e9-b56e-0800200c9a66	1125	Safe Housing	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1126-1b0f-11e9-b56e-0800200c9a66	1126	Psychiatric Emergency Services	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1127-1b0f-11e9-b56e-0800200c9a66	1127	Community Gardens	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1128-1b0f-11e9-b56e-0800200c9a66	1128	Emergency Food	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1130-1b0f-11e9-b56e-0800200c9a66	1130	Food Pantry	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1131-1b0f-11e9-b56e-0800200c9a66	1131	Free Meals	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1132-1b0f-11e9-b56e-0800200c9a66	1132	Help Pay for Food	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1133-1b0f-11e9-b56e-0800200c9a66	1133	Food Benefits	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1134-1b0f-11e9-b56e-0800200c9a66	1134	Nutrition	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1135-1b0f-11e9-b56e-0800200c9a66	1135	Emergency Shelter	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1136-1b0f-11e9-b56e-0800200c9a66	1136	Help Find Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1137-1b0f-11e9-b56e-0800200c9a66	1137	Help Pay for Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1138-1b0f-11e9-b56e-0800200c9a66	1138	Help Pay for Utilities	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1139-1b0f-11e9-b56e-0800200c9a66	1139	Home &amp; Renters Insurance	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1140-1b0f-11e9-b56e-0800200c9a66	1140	Housing Vouchers	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1141-1b0f-11e9-b56e-0800200c9a66	1141	Maintenance &amp; Repairs	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1142-1b0f-11e9-b56e-0800200c9a66	1142	Housing Advice	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1143-1b0f-11e9-b56e-0800200c9a66	1143	Foreclosure Counseling	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1144-1b0f-11e9-b56e-0800200c9a66	1144	Homebuyer Education	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1145-1b0f-11e9-b56e-0800200c9a66	1145	Residential Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1146-1b0f-11e9-b56e-0800200c9a66	1146	Long-Term Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1147-1b0f-11e9-b56e-0800200c9a66	1147	Assisted Living	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1148-1b0f-11e9-b56e-0800200c9a66	1148	Independent Living	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1149-1b0f-11e9-b56e-0800200c9a66	1149	Nursing Home	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1150-1b0f-11e9-b56e-0800200c9a66	1150	Public Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1151-1b0f-11e9-b56e-0800200c9a66	1151	Safe Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1152-1b0f-11e9-b56e-0800200c9a66	1152	Short-Term Housing	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1153-1b0f-11e9-b56e-0800200c9a66	1153	Nursing Home	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1154-1b0f-11e9-b56e-0800200c9a66	1154	Sober Living	df7b1103-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1155-1b0f-11e9-b56e-0800200c9a66	1155	Baby Supplies	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1156-1b0f-11e9-b56e-0800200c9a66	1156	Baby Clothes	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1157-1b0f-11e9-b56e-0800200c9a66	1157	Diapers &amp; Formula	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1158-1b0f-11e9-b56e-0800200c9a66	1158	Clothing	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1159-1b0f-11e9-b56e-0800200c9a66	1159	Baby Clothes	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1160-1b0f-11e9-b56e-0800200c9a66	1160	Clothes for School	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1161-1b0f-11e9-b56e-0800200c9a66	1161	Clothes for Work	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1162-1b0f-11e9-b56e-0800200c9a66	1162	Clothing Vouchers	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1163-1b0f-11e9-b56e-0800200c9a66	1163	Home Goods	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1164-1b0f-11e9-b56e-0800200c9a66	1164	Blankets &amp; Fans	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1165-1b0f-11e9-b56e-0800200c9a66	1165	Books	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1166-1b0f-11e9-b56e-0800200c9a66	1166	Furniture	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1167-1b0f-11e9-b56e-0800200c9a66	1167	Personal Care Items	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1168-1b0f-11e9-b56e-0800200c9a66	1168	Supplies for Work	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1169-1b0f-11e9-b56e-0800200c9a66	1169	Medical Supplies	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1170-1b0f-11e9-b56e-0800200c9a66	1170	Assistive Technology	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1171-1b0f-11e9-b56e-0800200c9a66	1171	Toys &amp; Gifts	df7b1104-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1172-1b0f-11e9-b56e-0800200c9a66	1172	Help Pay for Transit	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1173-1b0f-11e9-b56e-0800200c9a66	1173	Bus Passes	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1174-1b0f-11e9-b56e-0800200c9a66	1174	Help Pay for Gas	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1175-1b0f-11e9-b56e-0800200c9a66	1175	Transportation	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1176-1b0f-11e9-b56e-0800200c9a66	1176	Transportation for Healthcare	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1177-1b0f-11e9-b56e-0800200c9a66	1177	Transportation for School	df7b1105-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1178-1b0f-11e9-b56e-0800200c9a66	1178	Addiction &amp; Recovery	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1179-1b0f-11e9-b56e-0800200c9a66	1179	12-Step	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1180-1b0f-11e9-b56e-0800200c9a66	1180	Detox	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1181-1b0f-11e9-b56e-0800200c9a66	1181	Outpatient Treatment	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1182-1b0f-11e9-b56e-0800200c9a66	1182	Residential Treatment	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1183-1b0f-11e9-b56e-0800200c9a66	1183	Sober Living	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1184-1b0f-11e9-b56e-0800200c9a66	1184	Dental Care	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1185-1b0f-11e9-b56e-0800200c9a66	1185	End-of-Life Care	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1186-1b0f-11e9-b56e-0800200c9a66	1186	Bereavement	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1187-1b0f-11e9-b56e-0800200c9a66	1187	Burial &amp; Funeral Help	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1188-1b0f-11e9-b56e-0800200c9a66	1188	Hospice	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1189-1b0f-11e9-b56e-0800200c9a66	1189	Pain Management	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1190-1b0f-11e9-b56e-0800200c9a66	1190	Health Education	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1191-1b0f-11e9-b56e-0800200c9a66	1191	Daily Life Skills	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1192-1b0f-11e9-b56e-0800200c9a66	1192	Disease Management	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1193-1b0f-11e9-b56e-0800200c9a66	1193	Family Planning	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1194-1b0f-11e9-b56e-0800200c9a66	1194	Nutrition	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1195-1b0f-11e9-b56e-0800200c9a66	1195	Parenting Education	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1196-1b0f-11e9-b56e-0800200c9a66	1196	Sex Education	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1197-1b0f-11e9-b56e-0800200c9a66	1197	Understand Disability	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1198-1b0f-11e9-b56e-0800200c9a66	1198	Understand Mental Health	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1199-1b0f-11e9-b56e-0800200c9a66	1199	Help Pay for Healthcare	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1200-1b0f-11e9-b56e-0800200c9a66	1200	Disability Benefits	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1201-1b0f-11e9-b56e-0800200c9a66	1201	Discounted Healthcare	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1202-1b0f-11e9-b56e-0800200c9a66	1202	Health Insurance	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1203-1b0f-11e9-b56e-0800200c9a66	1203	Medical Supplies	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1204-1b0f-11e9-b56e-0800200c9a66	1204	Prescription Assistance	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1205-1b0f-11e9-b56e-0800200c9a66	1205	Transportation for Healthcare	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1206-1b0f-11e9-b56e-0800200c9a66	1206	Medical Care	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1207-1b0f-11e9-b56e-0800200c9a66	1207	Alternative Medicine	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1208-1b0f-11e9-b56e-0800200c9a66	1208	Assistive Technology	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1209-1b0f-11e9-b56e-0800200c9a66	1209	Birth Control	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1210-1b0f-11e9-b56e-0800200c9a66	1210	Checkup &amp; Test	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1211-1b0f-11e9-b56e-0800200c9a66	1211	Disability Screening	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1212-1b0f-11e9-b56e-0800200c9a66	1212	Disease Screening	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1213-1b0f-11e9-b56e-0800200c9a66	1213	Hearing Tests	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1214-1b0f-11e9-b56e-0800200c9a66	1214	Mental Health Evaluation	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1215-1b0f-11e9-b56e-0800200c9a66	1215	Pregnancy Tests	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1216-1b0f-11e9-b56e-0800200c9a66	1216	Vision Tests	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1217-1b0f-11e9-b56e-0800200c9a66	1217	Maternity Care	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1218-1b0f-11e9-b56e-0800200c9a66	1218	Personal Hygiene	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1219-1b0f-11e9-b56e-0800200c9a66	1219	Prevent &amp; Treat	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1220-1b0f-11e9-b56e-0800200c9a66	1220	Counseling	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1221-1b0f-11e9-b56e-0800200c9a66	1221	HIV Treatment	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1222-1b0f-11e9-b56e-0800200c9a66	1222	Pain Management	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1223-1b0f-11e9-b56e-0800200c9a66	1223	Disease Management	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1224-1b0f-11e9-b56e-0800200c9a66	1224	Nursing Home	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1225-1b0f-11e9-b56e-0800200c9a66	1225	Physical Therapy	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1226-1b0f-11e9-b56e-0800200c9a66	1226	Specialized Therapy	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1227-1b0f-11e9-b56e-0800200c9a66	1227	Vaccinations	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1228-1b0f-11e9-b56e-0800200c9a66	1228	In-Home Support	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1229-1b0f-11e9-b56e-0800200c9a66	1229	Residential Treatment	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1230-1b0f-11e9-b56e-0800200c9a66	1230	Outpatient Treatment	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1231-1b0f-11e9-b56e-0800200c9a66	1231	Psychiatric Emergency Services	df7b1106-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1232-1b0f-11e9-b56e-0800200c9a66	1232	Financial Assistance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1233-1b0f-11e9-b56e-0800200c9a66	1233	Help Pay for Childcare	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1234-1b0f-11e9-b56e-0800200c9a66	1234	Help Pay for Food	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1235-1b0f-11e9-b56e-0800200c9a66	1235	Food Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1236-1b0f-11e9-b56e-0800200c9a66	1236	Help Pay for Healthcare	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1237-1b0f-11e9-b56e-0800200c9a66	1237	Disability Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1238-1b0f-11e9-b56e-0800200c9a66	1238	Discounted Healthcare	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1239-1b0f-11e9-b56e-0800200c9a66	1239	Health Insurance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1240-1b0f-11e9-b56e-0800200c9a66	1240	Medical Supplies	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1241-1b0f-11e9-b56e-0800200c9a66	1241	Prescription Assistance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1242-1b0f-11e9-b56e-0800200c9a66	1242	Transportation for Healthcare	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1243-1b0f-11e9-b56e-0800200c9a66	1243	Help Pay for Housing	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1244-1b0f-11e9-b56e-0800200c9a66	1244	Help Pay for Utilities	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1245-1b0f-11e9-b56e-0800200c9a66	1245	Home &amp; Renters Insurance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1246-1b0f-11e9-b56e-0800200c9a66	1246	Maintenance &amp; Repairs	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1247-1b0f-11e9-b56e-0800200c9a66	1247	Help Pay for School	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1248-1b0f-11e9-b56e-0800200c9a66	1248	Books	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1249-1b0f-11e9-b56e-0800200c9a66	1249	Clothes for School	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1250-1b0f-11e9-b56e-0800200c9a66	1250	Financial Aid &amp; Loans	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1251-1b0f-11e9-b56e-0800200c9a66	1251	Transportation for School	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1252-1b0f-11e9-b56e-0800200c9a66	1252	Help Pay for Transit	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1253-1b0f-11e9-b56e-0800200c9a66	1253	Help Pay for Gas	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1254-1b0f-11e9-b56e-0800200c9a66	1254	Bus Passes	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1255-1b0f-11e9-b56e-0800200c9a66	1255	Help Pay for Work Expenses	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1256-1b0f-11e9-b56e-0800200c9a66	1256	Government Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1257-1b0f-11e9-b56e-0800200c9a66	1257	Disability Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1258-1b0f-11e9-b56e-0800200c9a66	1258	Food Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1259-1b0f-11e9-b56e-0800200c9a66	1259	Retirement Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1260-1b0f-11e9-b56e-0800200c9a66	1260	Understand Government Programs	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1261-1b0f-11e9-b56e-0800200c9a66	1261	Unemployment Benefits	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1262-1b0f-11e9-b56e-0800200c9a66	1262	Financial Education	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1263-1b0f-11e9-b56e-0800200c9a66	1263	Credit Counseling	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1264-1b0f-11e9-b56e-0800200c9a66	1264	Foreclosure Counseling	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1265-1b0f-11e9-b56e-0800200c9a66	1265	Homebuyer Education	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1266-1b0f-11e9-b56e-0800200c9a66	1266	Savings Program	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1267-1b0f-11e9-b56e-0800200c9a66	1267	Insurance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1268-1b0f-11e9-b56e-0800200c9a66	1268	Health Insurance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1269-1b0f-11e9-b56e-0800200c9a66	1269	Home &amp; Renters Insurance	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1270-1b0f-11e9-b56e-0800200c9a66	1270	Tax Preparation	df7b1107-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1271-1b0f-11e9-b56e-0800200c9a66	1271	Adoption &amp; Foster Care	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1272-1b0f-11e9-b56e-0800200c9a66	1272	Adoption &amp; Foster Placement	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1273-1b0f-11e9-b56e-0800200c9a66	1273	Adoption &amp; Foster Parenting	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1274-1b0f-11e9-b56e-0800200c9a66	1274	Adoption Planning	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1275-1b0f-11e9-b56e-0800200c9a66	1275	Post-Adoption Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1276-1b0f-11e9-b56e-0800200c9a66	1276	Animal Welfare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1277-1b0f-11e9-b56e-0800200c9a66	1277	Daytime Care	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1278-1b0f-11e9-b56e-0800200c9a66	1278	Adult Daycare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1279-1b0f-11e9-b56e-0800200c9a66	1279	Afterschool Care	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1280-1b0f-11e9-b56e-0800200c9a66	1280	Childcare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1281-1b0f-11e9-b56e-0800200c9a66	1281	Help Find Childcare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1282-1b0f-11e9-b56e-0800200c9a66	1282	Help Pay for Childcare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1283-1b0f-11e9-b56e-0800200c9a66	1283	Day Camp	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1284-1b0f-11e9-b56e-0800200c9a66	1284	Preschool	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1285-1b0f-11e9-b56e-0800200c9a66	1285	Recreation	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1286-1b0f-11e9-b56e-0800200c9a66	1286	Relief for Caregivers	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1287-1b0f-11e9-b56e-0800200c9a66	1287	End-of-Life Care	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1288-1b0f-11e9-b56e-0800200c9a66	1288	Bereavement	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1289-1b0f-11e9-b56e-0800200c9a66	1289	Burial &amp; Funeral Help	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1290-1b0f-11e9-b56e-0800200c9a66	1290	Hospice	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1291-1b0f-11e9-b56e-0800200c9a66	1291	Pain Management	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1292-1b0f-11e9-b56e-0800200c9a66	1292	Navigating the System	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1293-1b0f-11e9-b56e-0800200c9a66	1293	Help Fill out Forms	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1294-1b0f-11e9-b56e-0800200c9a66	1294	Help Find Childcare	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1295-1b0f-11e9-b56e-0800200c9a66	1295	Help Find Housing	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1296-1b0f-11e9-b56e-0800200c9a66	1296	Help Find School	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1297-1b0f-11e9-b56e-0800200c9a66	1297	Help Find Work	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1298-1b0f-11e9-b56e-0800200c9a66	1298	Residential Care	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1299-1b0f-11e9-b56e-0800200c9a66	1299	Assisted Living	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1300-1b0f-11e9-b56e-0800200c9a66	1300	Residential Treatment	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1301-1b0f-11e9-b56e-0800200c9a66	1301	Nursing Home	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1302-1b0f-11e9-b56e-0800200c9a66	1302	Overnight Camp	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1303-1b0f-11e9-b56e-0800200c9a66	1303	Support Network	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1304-1b0f-11e9-b56e-0800200c9a66	1304	Counseling	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1305-1b0f-11e9-b56e-0800200c9a66	1305	Help Hotlines	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1306-1b0f-11e9-b56e-0800200c9a66	1306	Home Visiting	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1307-1b0f-11e9-b56e-0800200c9a66	1307	In-Home Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1308-1b0f-11e9-b56e-0800200c9a66	1308	Mentoring	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1309-1b0f-11e9-b56e-0800200c9a66	1309	One-on-One Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1310-1b0f-11e9-b56e-0800200c9a66	1310	Peer Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1311-1b0f-11e9-b56e-0800200c9a66	1311	Spiritual Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1312-1b0f-11e9-b56e-0800200c9a66	1312	Support Groups	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1313-1b0f-11e9-b56e-0800200c9a66	1313	12-Step	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1314-1b0f-11e9-b56e-0800200c9a66	1314	Bereavement	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1315-1b0f-11e9-b56e-0800200c9a66	1315	Parenting Education	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1316-1b0f-11e9-b56e-0800200c9a66	1316	Virtual Support	df7b1108-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1317-1b0f-11e9-b56e-0800200c9a66	1317	Help Find School	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1318-1b0f-11e9-b56e-0800200c9a66	1318	Help Pay for School	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1319-1b0f-11e9-b56e-0800200c9a66	1319	Books	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1320-1b0f-11e9-b56e-0800200c9a66	1320	Clothes for School	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1321-1b0f-11e9-b56e-0800200c9a66	1321	Financial Aid &amp; Loans	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1322-1b0f-11e9-b56e-0800200c9a66	1322	Transportation for School	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1323-1b0f-11e9-b56e-0800200c9a66	1323	More Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1324-1b0f-11e9-b56e-0800200c9a66	1324	Alternative Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1325-1b0f-11e9-b56e-0800200c9a66	1325	Disaster Preparedness &amp; Response	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1326-1b0f-11e9-b56e-0800200c9a66	1326	English as a Second Language (ESL)	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1327-1b0f-11e9-b56e-0800200c9a66	1327	Financial Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1328-1b0f-11e9-b56e-0800200c9a66	1328	Credit Counseling	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1329-1b0f-11e9-b56e-0800200c9a66	1329	Foreclosure Counseling	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1330-1b0f-11e9-b56e-0800200c9a66	1330	Homebuyer Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1331-1b0f-11e9-b56e-0800200c9a66	1331	Foreign Languages	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1332-1b0f-11e9-b56e-0800200c9a66	1332	GED/High-School Equivalency	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1333-1b0f-11e9-b56e-0800200c9a66	1333	Health Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1334-1b0f-11e9-b56e-0800200c9a66	1334	Disease Management	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1335-1b0f-11e9-b56e-0800200c9a66	1335	Family Planning	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1336-1b0f-11e9-b56e-0800200c9a66	1336	Nutrition Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1337-1b0f-11e9-b56e-0800200c9a66	1337	Parenting Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1338-1b0f-11e9-b56e-0800200c9a66	1338	Sex Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1339-1b0f-11e9-b56e-0800200c9a66	1339	Understand Disability	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1340-1b0f-11e9-b56e-0800200c9a66	1340	Understand Mental Health	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1341-1b0f-11e9-b56e-0800200c9a66	1341	Supported Employment	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1342-1b0f-11e9-b56e-0800200c9a66	1342	Special Education	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1343-1b0f-11e9-b56e-0800200c9a66	1343	Tutoring	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1344-1b0f-11e9-b56e-0800200c9a66	1344	Preschool	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1345-1b0f-11e9-b56e-0800200c9a66	1345	Screening &amp; Exams	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1346-1b0f-11e9-b56e-0800200c9a66	1346	Citizenship &amp; Immigration	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1347-1b0f-11e9-b56e-0800200c9a66	1347	GED/High-School Equivalency	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1348-1b0f-11e9-b56e-0800200c9a66	1348	English as a Second Language (ESL)	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1349-1b0f-11e9-b56e-0800200c9a66	1349	Skills &amp; Training	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1350-1b0f-11e9-b56e-0800200c9a66	1350	Basic Literacy	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1351-1b0f-11e9-b56e-0800200c9a66	1351	Computer Class	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1352-1b0f-11e9-b56e-0800200c9a66	1352	Daily Life Skills	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1353-1b0f-11e9-b56e-0800200c9a66	1353	Interview Training	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1354-1b0f-11e9-b56e-0800200c9a66	1354	Resume Development	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1355-1b0f-11e9-b56e-0800200c9a66	1355	Skills Assessment	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1356-1b0f-11e9-b56e-0800200c9a66	1356	Specialized Training	df7b1109-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1357-1b0f-11e9-b56e-0800200c9a66	1357	Help Find Work	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1358-1b0f-11e9-b56e-0800200c9a66	1358	Job Placement	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1359-1b0f-11e9-b56e-0800200c9a66	1359	Supported Employment	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1360-1b0f-11e9-b56e-0800200c9a66	1360	Help Pay for Work Expenses	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1361-1b0f-11e9-b56e-0800200c9a66	1361	Clothes for Work	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1362-1b0f-11e9-b56e-0800200c9a66	1362	Retirement Benefits	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1363-1b0f-11e9-b56e-0800200c9a66	1363	Supplies for Work	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1364-1b0f-11e9-b56e-0800200c9a66	1364	Unemployment Benefits	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1365-1b0f-11e9-b56e-0800200c9a66	1365	Skills &amp; Training	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1366-1b0f-11e9-b56e-0800200c9a66	1366	Basic Literacy	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1367-1b0f-11e9-b56e-0800200c9a66	1367	Computer Class	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1368-1b0f-11e9-b56e-0800200c9a66	1368	GED/High-School Equivalency	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1369-1b0f-11e9-b56e-0800200c9a66	1369	Interview Training	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1370-1b0f-11e9-b56e-0800200c9a66	1370	Resume Development	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1371-1b0f-11e9-b56e-0800200c9a66	1371	Skills Assessment	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1372-1b0f-11e9-b56e-0800200c9a66	1372	Specialized Training	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1373-1b0f-11e9-b56e-0800200c9a66	1373	Supported Employment	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1374-1b0f-11e9-b56e-0800200c9a66	1374	Workplace Rights	df7b1110-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1375-1b0f-11e9-b56e-0800200c9a66	1375	Advocacy &amp; Legal Aid	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1376-1b0f-11e9-b56e-0800200c9a66	1376	Adoption &amp; Foster Care	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1377-1b0f-11e9-b56e-0800200c9a66	1377	Adoption &amp; Foster Placement	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1378-1b0f-11e9-b56e-0800200c9a66	1378	Adoption &amp; Foster Parenting	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1379-1b0f-11e9-b56e-0800200c9a66	1379	Adoption Planning	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1380-1b0f-11e9-b56e-0800200c9a66	1380	Post-Adoption Support	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1381-1b0f-11e9-b56e-0800200c9a66	1381	Citizenship &amp; Immigration	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1382-1b0f-11e9-b56e-0800200c9a66	1382	Discrimination &amp; Civil Rights	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1383-1b0f-11e9-b56e-0800200c9a66	1383	Guardianship	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1384-1b0f-11e9-b56e-0800200c9a66	1384	Identification Recovery	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1385-1b0f-11e9-b56e-0800200c9a66	1385	Understand Government Programs	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1386-1b0f-11e9-b56e-0800200c9a66	1386	Workplace Rights	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1387-1b0f-11e9-b56e-0800200c9a66	1387	Mediation	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1388-1b0f-11e9-b56e-0800200c9a66	1388	Notary	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1389-1b0f-11e9-b56e-0800200c9a66	1389	Representation	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1390-1b0f-11e9-b56e-0800200c9a66	1390	Translation &amp; Interpretation	df7b1111-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720001-1b0f-11e9-b56e-0800200c9a66	0001	Anyone in Need	df720000-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720003-1b0f-11e9-b56e-0800200c9a66	0003	Adults	df720002-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720004-1b0f-11e9-b56e-0800200c9a66	0004	Teens	df720002-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720005-1b0f-11e9-b56e-0800200c9a66	0005	Children	df720002-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720006-1b0f-11e9-b56e-0800200c9a66	0006	Seniors	df720002-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720008-1b0f-11e9-b56e-0800200c9a66	0008	Active Duty	df720007-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720009-1b0f-11e9-b56e-0800200c9a66	0009	National Guard	df720007-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720010-1b0f-11e9-b56e-0800200c9a66	0010	Veterans	df720007-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720012-1b0f-11e9-b56e-0800200c9a66	0012	Immigrants	df720011-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720013-1b0f-11e9-b56e-0800200c9a66	0013	Refugees	df720011-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720014-1b0f-11e9-b56e-0800200c9a66	0014	Undocumented	df720011-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720016-1b0f-11e9-b56e-0800200c9a66	0016	Ex-Offenders	df720015-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720018-1b0f-11e9-b56e-0800200c9a66	0018	Learning Disability	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720019-1b0f-11e9-b56e-0800200c9a66	0019	Developmental Disability	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720020-1b0f-11e9-b56e-0800200c9a66	0020	Physical Disability	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720093-1b0f-11e9-b56e-0800200c9a66	0093	Intellectual Disability	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720021-1b0f-11e9-b56e-0800200c9a66	0021	Mentally Incapacitated	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720022-1b0f-11e9-b56e-0800200c9a66	0022	Limited Mobility	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720023-1b0f-11e9-b56e-0800200c9a66	0023	Hearing Impairment	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720024-1b0f-11e9-b56e-0800200c9a66	0024	Visual Impairment	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720025-1b0f-11e9-b56e-0800200c9a66	0025	Mental Illness	df720017-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720027-1b0f-11e9-b56e-0800200c9a66	0027	Dropouts	df720026-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720028-1b0f-11e9-b56e-0800200c9a66	0028	Students	df720026-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720030-1b0f-11e9-b56e-0800200c9a66	0030	Grieving	df720029-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720032-1b0f-11e9-b56e-0800200c9a66	0032	Employed	df720031-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720033-1b0f-11e9-b56e-0800200c9a66	0033	Retirement	df720031-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720034-1b0f-11e9-b56e-0800200c9a66	0034	Unemployed	df720031-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720036-1b0f-11e9-b56e-0800200c9a66	0036	Women	df720035-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720037-1b0f-11e9-b56e-0800200c9a66	0037	Men	df720035-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720038-1b0f-11e9-b56e-0800200c9a66	0038	Transgender	df720035-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720040-1b0f-11e9-b56e-0800200c9a66	0040	Foster Youth	df720039-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720042-1b0f-11e9-b56e-0800200c9a66	0042	Hospitalized	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720043-1b0f-11e9-b56e-0800200c9a66	0043	Pregnant	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720044-1b0f-11e9-b56e-0800200c9a66	0044	Cancer	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720045-1b0f-11e9-b56e-0800200c9a66	0045	Alzheimers	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720046-1b0f-11e9-b56e-0800200c9a66	0046	Seizure Disorder	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720047-1b0f-11e9-b56e-0800200c9a66	0047	Terminal Illness	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720048-1b0f-11e9-b56e-0800200c9a66	0048	Infectious Disease	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720049-1b0f-11e9-b56e-0800200c9a66	0049	Neuromuscular Disease	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720050-1b0f-11e9-b56e-0800200c9a66	0050	Substance Dependency	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720051-1b0f-11e9-b56e-0800200c9a66	0051	Mental Illness	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720090-1b0f-11e9-b56e-0800200c9a66	0090	Chronic Illness	df720041-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720053-1b0f-11e9-b56e-0800200c9a66	0053	Individuals	df720052-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720054-1b0f-11e9-b56e-0800200c9a66	0054	Families	df720052-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720056-1b0f-11e9-b56e-0800200c9a66	0056	Home Owners	df720055-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720057-1b0f-11e9-b56e-0800200c9a66	0057	Home Renters	df720055-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720058-1b0f-11e9-b56e-0800200c9a66	0058	Homeless	df720055-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1101-1b0f-11e9-b56e-0800200c9a66	1101	emergency	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1102-1b0f-11e9-b56e-0800200c9a66	1102	food	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1103-1b0f-11e9-b56e-0800200c9a66	1103	housing	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1104-1b0f-11e9-b56e-0800200c9a66	1104	goods	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1105-1b0f-11e9-b56e-0800200c9a66	1105	transit	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1106-1b0f-11e9-b56e-0800200c9a66	1106	health	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1107-1b0f-11e9-b56e-0800200c9a66	1107	money	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1108-1b0f-11e9-b56e-0800200c9a66	1108	care	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1109-1b0f-11e9-b56e-0800200c9a66	1109	education	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1110-1b0f-11e9-b56e-0800200c9a66	1110	work	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1111-1b0f-11e9-b56e-0800200c9a66	1111	legal	df7b1100-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1112-1b0f-11e9-b56e-0800200c9a66	1112	Disaster Response	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1113-1b0f-11e9-b56e-0800200c9a66	1113	Emergency Payments	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1114-1b0f-11e9-b56e-0800200c9a66	1114	Help Pay for Food	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1115-1b0f-11e9-b56e-0800200c9a66	1115	Help Pay for Healthcare	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1116-1b0f-11e9-b56e-0800200c9a66	1116	Help Pay for Housing	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1117-1b0f-11e9-b56e-0800200c9a66	1117	Help Pay for Gas	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1118-1b0f-11e9-b56e-0800200c9a66	1118	Help Pay for School	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1119-1b0f-11e9-b56e-0800200c9a66	1119	Help Pay for Utilities	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1120-1b0f-11e9-b56e-0800200c9a66	1120	Emergency Food	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1121-1b0f-11e9-b56e-0800200c9a66	1121	Emergency Shelter	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1122-1b0f-11e9-b56e-0800200c9a66	1122	Help Find Missing Persons	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1123-1b0f-11e9-b56e-0800200c9a66	1123	Immediate Safety	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7b1124-1b0f-11e9-b56e-0800200c9a66	1124	Help Escape Violence	df7b1101-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df7be950-1b0f-11e9-b56e-0800200c9a66	AIRS	Taxonomy A	e9004840-1b0f-11e9-b56e-0800200c9a66	AIRS	\N
+df7b1100-1b0f-11e9-b56e-0800200c9a66	OpenElig	Open Eligiblity	\N	Open Eligiblity	\N
+df7b1129-1b0f-11e9-b56e-0800200c9a66	1129	Food Delivery	df7b1102-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720059-1b0f-11e9-b56e-0800200c9a66	0059	Near Homeless	df720055-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720060-1b0f-11e9-b56e-0800200c9a66	0060	Runaways	df720055-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720062-1b0f-11e9-b56e-0800200c9a66	0062	Benefit Recipients	df720061-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720063-1b0f-11e9-b56e-0800200c9a66	0063	Low-Income	df720061-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720065-1b0f-11e9-b56e-0800200c9a66	0065	Uninsured	df720064-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720067-1b0f-11e9-b56e-0800200c9a66	0067	Limited English	df720066-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720069-1b0f-11e9-b56e-0800200c9a66	0069	African American	df720068-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720070-1b0f-11e9-b56e-0800200c9a66	0070	Asian	df720068-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720071-1b0f-11e9-b56e-0800200c9a66	0071	Latino	df720068-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720073-1b0f-11e9-b56e-0800200c9a66	0073	Caregivers	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720091-1b0f-11e9-b56e-0800200c9a66	0091	Spouses	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720092-1b0f-11e9-b56e-0800200c9a66	0092	Dependents	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720074-1b0f-11e9-b56e-0800200c9a66	0074	Fathers	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720075-1b0f-11e9-b56e-0800200c9a66	0075	Mothers	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720076-1b0f-11e9-b56e-0800200c9a66	0076	Parents	df720072-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720078-1b0f-11e9-b56e-0800200c9a66	0078	LGBTQ	df720077-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720080-1b0f-11e9-b56e-0800200c9a66	0080	All Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720081-1b0f-11e9-b56e-0800200c9a66	0081	Abuse or Neglect Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720082-1b0f-11e9-b56e-0800200c9a66	0082	Burn Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720083-1b0f-11e9-b56e-0800200c9a66	0083	Domestic Violence Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720084-1b0f-11e9-b56e-0800200c9a66	0084	Human Trafficking Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720085-1b0f-11e9-b56e-0800200c9a66	0085	Natural Disaster Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720086-1b0f-11e9-b56e-0800200c9a66	0086	Sexual Assault Survivors	df720079-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720088-1b0f-11e9-b56e-0800200c9a66	0088	In Crisis	df720087-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+df720089-1b0f-11e9-b56e-0800200c9a66	0089	In Danger	df720087-1b0f-11e9-b56e-0800200c9a66	Open Eligiblity	\N
+\.
+
+
+--
+-- Name: accessibility_for_disabilities accessibility_for_disabilities_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.accessibility_for_disabilities
+    ADD CONSTRAINT accessibility_for_disabilities_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: contact contact_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contact
+    ADD CONSTRAINT contact_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: eligibility eligibility_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eligibility
+    ADD CONSTRAINT eligibility_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: funding funding_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funding
+    ADD CONSTRAINT funding_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: language language_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.language
+    ADD CONSTRAINT language_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: location location_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.location
+    ADD CONSTRAINT location_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: meta_table_description meta_table_description_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.meta_table_description
+    ADD CONSTRAINT meta_table_description_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: metadata metadata_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.metadata
+    ADD CONSTRAINT metadata_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: metadata metadata_resource_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.metadata
+    ADD CONSTRAINT metadata_resource_id_key UNIQUE (resource_id);
+
+
+--
+-- Name: metadata metadata_resource_type_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.metadata
+    ADD CONSTRAINT metadata_resource_type_key UNIQUE (resource_type);
+
+
+--
+-- Name: organization organization_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.organization
+    ADD CONSTRAINT organization_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: other_attribute other_attribute_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.other_attribute
+    ADD CONSTRAINT other_attribute_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: payment_accepted payment_accepted_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_accepted
+    ADD CONSTRAINT payment_accepted_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: phone phone_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: physical_address physical_address_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.physical_address
+    ADD CONSTRAINT physical_address_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: postal_address postal_address_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postal_address
+    ADD CONSTRAINT postal_address_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: program program_organization_id_key; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.program
+    ADD CONSTRAINT program_organization_id_key UNIQUE (organization_id);
+
+
+--
+-- Name: program program_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.program
+    ADD CONSTRAINT program_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: required_document required_document_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.required_document
+    ADD CONSTRAINT required_document_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: schedule schedule_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_area service_area_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_area
+    ADD CONSTRAINT service_area_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_at_location service_at_location_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_at_location
+    ADD CONSTRAINT service_at_location_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service_attribute service_attribute_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_attribute
+    ADD CONSTRAINT service_attribute_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: service service_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service
+    ADD CONSTRAINT service_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: taxonomy_term taxonomy_term_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.taxonomy_term
+    ADD CONSTRAINT taxonomy_term_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accessibility_for_disabilities accessibility_for_disabilities_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.accessibility_for_disabilities
+    ADD CONSTRAINT accessibility_for_disabilities_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: contact contact_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contact
+    ADD CONSTRAINT contact_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: contact contact_service_at_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contact
+    ADD CONSTRAINT contact_service_at_location_id_fkey FOREIGN KEY (service_at_location_id) REFERENCES public.service_at_location(id);
+
+
+--
+-- Name: contact contact_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.contact
+    ADD CONSTRAINT contact_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: eligibility eligibility_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.eligibility
+    ADD CONSTRAINT eligibility_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: funding funding_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funding
+    ADD CONSTRAINT funding_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: funding funding_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.funding
+    ADD CONSTRAINT funding_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: language language_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.language
+    ADD CONSTRAINT language_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: language language_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.language
+    ADD CONSTRAINT language_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: location location_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.location
+    ADD CONSTRAINT location_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: other_attribute other_attribute_taxonomy_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.other_attribute
+    ADD CONSTRAINT other_attribute_taxonomy_term_id_fkey FOREIGN KEY (taxonomy_term_id) REFERENCES public.taxonomy_term(id);
+
+
+--
+-- Name: payment_accepted payment_accepted_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.payment_accepted
+    ADD CONSTRAINT payment_accepted_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: phone phone_contact_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_contact_id_fkey FOREIGN KEY (contact_id) REFERENCES public.contact(id);
+
+
+--
+-- Name: phone phone_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: phone phone_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: phone phone_service_at_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_service_at_location_id_fkey FOREIGN KEY (service_at_location_id) REFERENCES public.service_at_location(id);
+
+
+--
+-- Name: phone phone_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.phone
+    ADD CONSTRAINT phone_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: physical_address physical_address_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.physical_address
+    ADD CONSTRAINT physical_address_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: postal_address postal_address_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.postal_address
+    ADD CONSTRAINT postal_address_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: program program_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.program
+    ADD CONSTRAINT program_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: required_document required_document_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.required_document
+    ADD CONSTRAINT required_document_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: schedule schedule_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: schedule schedule_service_at_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_service_at_location_id_fkey FOREIGN KEY (service_at_location_id) REFERENCES public.service_at_location(id);
+
+
+--
+-- Name: schedule schedule_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.schedule
+    ADD CONSTRAINT schedule_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_area service_area_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_area
+    ADD CONSTRAINT service_area_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_at_location service_at_location_location_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_at_location
+    ADD CONSTRAINT service_at_location_location_id_fkey FOREIGN KEY (location_id) REFERENCES public.location(id);
+
+
+--
+-- Name: service_at_location service_at_location_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_at_location
+    ADD CONSTRAINT service_at_location_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_attribute service_attribute_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_attribute
+    ADD CONSTRAINT service_attribute_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.service(id);
+
+
+--
+-- Name: service_attribute service_attribute_taxonomy_term_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service_attribute
+    ADD CONSTRAINT service_attribute_taxonomy_term_id_fkey FOREIGN KEY (taxonomy_term_id) REFERENCES public.taxonomy_term(id);
+
+
+--
+-- Name: service service_organization_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service
+    ADD CONSTRAINT service_organization_id_fkey FOREIGN KEY (organization_id) REFERENCES public.organization(id);
+
+
+--
+-- Name: service service_program_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.service
+    ADD CONSTRAINT service_program_id_fkey FOREIGN KEY (program_id) REFERENCES public.program(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
